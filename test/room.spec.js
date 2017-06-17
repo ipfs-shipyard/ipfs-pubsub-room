@@ -89,4 +89,19 @@ describe('sync', () => {
       }
     })
   })
+
+  it('has peer', (done) => {
+    expect(room1.getPeers()).to.deep.equal([id2])
+    expect(room2.getPeers()).to.deep.equal([id1])
+    done()
+  })
+
+  it('can broadcast', (done) => {
+    room1.broadcast('message 1')
+    room2.once('message', (message) => {
+      expect(message.from).to.equal(id1)
+      expect(message.data.toString()).to.equal('message 1')
+      done()
+    })
+  })
 })

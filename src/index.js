@@ -62,6 +62,18 @@ class PubSubRoom extends EventEmitter {
     })
   }
 
+  broadcast (_message) {
+    let message = _message
+    if (!Buffer.isBuffer(message)) {
+      message = Buffer.from(message)
+    }
+    this._ipfs.pubsub.publish(this._topic, message, (err) => {
+      if (err) {
+        this.emit('error', err)
+      }
+    })
+  }
+
   _start () {
     this._interval = timers.setInterval(
       this._pollPeers.bind(this),
