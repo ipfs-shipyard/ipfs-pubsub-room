@@ -34,7 +34,7 @@ class PubSubRoom extends EventEmitter {
       this._start()
     }
     this._ipfs.on('ready', this._start.bind(this))
-    this._ipfs.on('stop', this.stop.bind(this))
+    this._ipfs.on('stop', this.leave.bind(this))
   }
 
   getPeers () {
