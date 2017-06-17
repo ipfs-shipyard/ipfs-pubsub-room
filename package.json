@@ -1,0 +1,43 @@
+{
+  "name": "ipfs-pubsub-room",
+  "version": "0.1.0",
+  "description": "IPFS pub-sub room",
+  "main": "src/index.js",
+  "scripts": {
+    "lint": "aegir-lint",
+    "test": "npm run lint && npm run test:browser",
+    "test:browser": "aegir-test browser --dom",
+    "test:node": "aegir-test node"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pgte/ipfs-pubsub-room.git"
+  },
+  "keywords": [
+    "ipfs",
+    "pubsub",
+    "p2p",
+    "room",
+    "broadcast"
+  ],
+  "author": "Pedro Teixeira <i@pgte.me>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/pgte/ipfs-pubsub-room/issues"
+  },
+  "homepage": "https://github.com/pgte/ipfs-pubsub-room#readme",
+  "dependencies": {
+    "hyperdiff": "^2.0.2",
+    "lodash.clonedeep": "^4.5.0"
+  },
+  "devDependencies": {
+    "aegir": "^11.0.2",
+    "async": "^2.4.1",
+    "chai": "^4.0.2",
+    "dirty-chai": "^2.0.0",
+    "ipfs": "^0.24.1"
+  },
+  "browser": {
+    "./test/utils/create-repo-node.js": "./test/utils/create-repo-browser.js"
+  }
+}
