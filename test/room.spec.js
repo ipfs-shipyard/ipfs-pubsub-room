@@ -104,4 +104,21 @@ describe('sync', () => {
       done()
     })
   })
+
+  it('can send private message', (done) => {
+    room2.sendTo(id1, 'message 2')
+    room1.once('message', (message) => {
+      expect(message.from).to.equal(id2)
+      expect(message.data.toString()).to.equal('message 2')
+      done()
+    })
+  })
+
+  it('can be stopped', (done) => {
+    room1.once('peer left', (peer) => {
+      expect(peer).to.equal(id2)
+      done()
+    })
+    room2.stop()
+  })
 })

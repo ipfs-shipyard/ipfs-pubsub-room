@@ -28,7 +28,9 @@
   "homepage": "https://github.com/pgte/ipfs-pubsub-room#readme",
   "dependencies": {
     "hyperdiff": "^2.0.2",
-    "lodash.clonedeep": "^4.5.0"
+    "lodash.clonedeep": "^4.5.0",
+    "pull-pushable": "^2.1.1",
+    "pull-stream": "^3.6.0"
   },
   "devDependencies": {
     "aegir": "^11.0.2",

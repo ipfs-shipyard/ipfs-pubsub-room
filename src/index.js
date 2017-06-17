@@ -4,6 +4,10 @@ const diff = require('hyperdiff')
 const EventEmitter = require('events')
 const timers = require('timers')
 const clone = require('lodash.clonedeep')
+const pull = require('pull-stream')
+
+const PROTOCOL = require('./protocol')
+const Connection = require('./connection')
 
 const DEFAULT_OPTIONS = {
   pollInterval: 1000
@@ -20,6 +24,7 @@ class PubSubRoom extends EventEmitter {
     this._topic = topic
     this._options = Object.assign({}, clone(DEFAULT_OPTIONS), clone(options))
     this._peers = []
+    this._connections = {}
 
     if (!this._ipfs.pubsub) {
       throw new Error('This IPFS node does not have pubsub.')
@@ -42,24 +47,10 @@ class PubSubRoom extends EventEmitter {
 
   stop () {
     timers.clearInterval()
-    this.emit('stop')
-  }
-
-  getPeerAddresses (peerId, callback) {
-    this._ipfs.swarm.peers((err, peersAddresses) => {
-      if (err) {
-        callback(err)
-        return // early
-      }
-
-      callback(
-        null,
-        peersAddresses
-          .filter(
-            (peerAddress) => peerAddress.peer.id.toB58String() === peerId)
-          .map(peerAddress => peerAddress.addr)
-      )
+    Object.keys(this._connections).forEach((peer) => {
+      this._connections[peer].stop()
     })
+    this.emit('stop')
   }
 
   broadcast (_message) {
@@ -72,6 +63,14 @@ class PubSubRoom extends EventEmitter {
         this.emit('error', err)
       }
     })
+  }
+
+  sendTo (peer, message) {
+    let conn = this._connections[peer]
+    if (!conn) {
+      conn = new Connection(peer, this._ipfs, this)
+    }
+    conn.push(message)
   }
 
   _start () {
@@ -91,6 +90,8 @@ class PubSubRoom extends EventEmitter {
     this.once('stop', () => {
       this._ipfs.pubsub.unsubscribe(this._topic, listener)
     })
+
+    this._ipfs._libp2pNode.handle(PROTOCOL, this._handleDirectConnection.bind(this))
   }
 
   _pollPeers () {
@@ -119,5 +120,32 @@ class PubSubRoom extends EventEmitter {
 
   _onMessage (message) {
     this.emit('message', message)
+  }
+
+  _handleDirectConnection (protocol, conn) {
+    conn.getPeerInfo((err, peerInfo) => {
+      if (err) {
+        throw err
+      }
+
+      const peerId = peerInfo.id.toB58String()
+
+      pull(
+        conn,
+        pull.map((message) => {
+          this.emit('message', {
+            from: peerId,
+            data: message
+          })
+          return message
+        }),
+        pull.onEnd((err) => {
+          // do nothinfg
+          if (err) {
+            this.emit('warning', err)
+          }
+        })
+      )
+    })
   }
 }
