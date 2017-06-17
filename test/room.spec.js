@@ -119,6 +119,6 @@ describe('sync', () => {
       expect(peer).to.equal(id2)
       done()
     })
-    room2.stop()
+    room2.leave()
   })
 })

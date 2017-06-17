@@ -45,7 +45,7 @@ class PubSubRoom extends EventEmitter {
     return this._peers.indexOf(peer) >= 0
   }
 
-  stop () {
+  leave () {
     timers.clearInterval()
     Object.keys(this._connections).forEach((peer) => {
       this._connections[peer].stop()
