@@ -1,5 +1,7 @@
 # ipfs-pubsub-room
 
+[![Build Status](https://travis-ci.org/pgte/ipfs-pubsub-room.svg?branch=master)](https://travis-ci.org/pgte/ipfs-pubsub-room)
+
 > Creates a room based on an IPFS pub-sub channel. Emits membership events, listens for messages, broadcast and direct messeges to peers.
 
 ## Install
