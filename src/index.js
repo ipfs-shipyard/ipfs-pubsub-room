@@ -69,9 +69,7 @@ class PubSubRoom extends EventEmitter {
     let conn = this._connections[peer]
     if (!conn) {
       conn = new Connection(peer, this._ipfs, this)
-      conn.on('error', (err) => {
-        console.log('SENDING ERROR', err)
-      })
+      conn.on('error', (err) => this.emit('error', err))
     }
     conn.push(message)
   }
