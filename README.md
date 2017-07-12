@@ -4,6 +4,8 @@
 
 > Creates a room based on an IPFS pub-sub channel. Emits membership events, listens for messages, broadcast and direct messeges to peers.
 
+([Demo video](https://t.co/HNYQGE4D4P))
+
 ## Install
 
 ```bash
