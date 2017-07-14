@@ -44,6 +44,10 @@ Sends message (string or buffer) to peer.
 
 Leaves room, stopping everything.
 
+## room.getPeers()
+
+Returns an array of peer identifiers (strings).
+
 ## room.on('message', (message) => {})
 
 Listens for messages. A `message` is an object containing the following properties:
