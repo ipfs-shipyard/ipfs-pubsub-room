@@ -50,6 +50,10 @@ Leaves room, stopping everything.
 
 Returns an array of peer identifiers (strings).
 
+## room.hasPeer(peer)
+
+Returns a boolean indicating if the given peer is present in the room.
+
 ## room.on('message', (message) => {})
 
 Listens for messages. A `message` is an object containing the following properties:
