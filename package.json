@@ -11,7 +11,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/pgte/ipfs-pubsub-room.git"
+    "url": "git+https://github.com/ipfs-shipyard/ipfs-pubsub-room.git"
   },
   "keywords": [
     "ipfs",
@@ -23,9 +23,9 @@
   "author": "Pedro Teixeira <i@pgte.me>",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/pgte/ipfs-pubsub-room/issues"
+    "url": "https://github.com/ipfs-shipyard/ipfs-pubsub-room/issues"
   },
-  "homepage": "https://github.com/pgte/ipfs-pubsub-room#readme",
+  "homepage": "https://github.com/ipfs-shipyard/ipfs-pubsub-room#readme",
   "dependencies": {
     "hyperdiff": "^2.0.2",
     "lodash.clonedeep": "^4.5.0",
