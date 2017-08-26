@@ -72,6 +72,10 @@ Once a peer has joined the room.
 
 Once a peer has left the room.
 
+## room.on('subscribed',() => {})
+
+once a peer is connected to the channel
+
 ## License
 
 ISC
