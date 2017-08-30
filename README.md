@@ -72,6 +72,10 @@ Once a peer has joined the room.
 
 Once a peer has left the room.
 
+## room.on('subscribed',() => {})
+
+Once your program has subscribed the topic and announced through IPFS pubsub.
+
 ## License
 
 ISC
