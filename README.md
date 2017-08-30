@@ -74,7 +74,7 @@ Once a peer has left the room.
 
 ## room.on('subscribed',() => {})
 
-Once your program has subscribe the topic on ipfs pubsub.
+Once your program has subscribed the topic and announced through IPFS pubsub.
 
 ## License
 
