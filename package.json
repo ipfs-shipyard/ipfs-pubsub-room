@@ -27,17 +27,17 @@
   },
   "homepage": "https://github.com/ipfs-shipyard/ipfs-pubsub-room#readme",
   "dependencies": {
-    "hyperdiff": "^2.0.2",
+    "hyperdiff": "^2.0.3",
     "lodash.clonedeep": "^4.5.0",
     "pull-pushable": "^2.1.1",
     "pull-stream": "^3.6.0"
   },
   "devDependencies": {
     "aegir": "^11.0.2",
-    "async": "^2.4.1",
-    "chai": "^4.0.2",
-    "dirty-chai": "^2.0.0",
-    "ipfs": "^0.24.1"
+    "async": "^2.5.0",
+    "chai": "^4.1.1",
+    "dirty-chai": "^2.0.1",
+    "ipfs": "^0.25.2"
   },
   "browser": {
     "./test/utils/create-repo-node.js": "./test/utils/create-repo-browser.js"
