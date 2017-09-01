@@ -5,7 +5,7 @@ const pull = require('pull-stream')
 const Pushable = require('pull-pushable')
 
 const PROTOCOL = require('./protocol')
-const UTILS = require('./utils')
+const encoding = require('./encoding')
 
 module.exports = class Connection extends EventEmitter {
   constructor (id, ipfs, room) {
@@ -19,7 +19,7 @@ module.exports = class Connection extends EventEmitter {
 
   push (message) {
     if (this._connection) {
-      this._connection.push(UTILS.encode(message))
+      this._connection.push(encoding(message))
     } else {
       if (!this._connecting) {
         this._getConnection()
