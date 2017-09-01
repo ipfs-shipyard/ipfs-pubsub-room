@@ -37,7 +37,7 @@
     "async": "^2.4.1",
     "chai": "^4.0.2",
     "dirty-chai": "^2.0.0",
-    "ipfs": "^0.24.1"
+    "ipfs": "^0.25.2"
   },
   "browser": {
     "./test/utils/create-repo-node.js": "./test/utils/create-repo-browser.js"

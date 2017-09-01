@@ -83,7 +83,7 @@ module.exports = class Connection extends EventEmitter {
         peersAddresses
           .filter(
             (peerAddress) => peerAddress.peer.id.toB58String() === peerId)
-          .map(peerAddress => peerAddress.addr)
+          .map(peerAddress => peerAddress.peer)
       )
     })
   }
