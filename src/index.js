@@ -8,6 +8,7 @@ const pull = require('pull-stream')
 
 const PROTOCOL = require('./protocol')
 const Connection = require('./connection')
+const encoding = require('./encoding')
 
 const DEFAULT_OPTIONS = {
   pollInterval: 1000
@@ -57,10 +58,7 @@ class PubSubRoom extends EventEmitter {
   }
 
   broadcast (_message) {
-    let message = _message
-    if (!Buffer.isBuffer(message)) {
-      message = Buffer.from(message)
-    }
+    let message = encoding(_message)
     this._ipfs.pubsub.publish(this._topic, message, (err) => {
       if (err) {
         this.emit('error', err)

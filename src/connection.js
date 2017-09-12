@@ -5,6 +5,7 @@ const pull = require('pull-stream')
 const Pushable = require('pull-pushable')
 
 const PROTOCOL = require('./protocol')
+const encoding = require('./encoding')
 
 module.exports = class Connection extends EventEmitter {
   constructor (id, ipfs, room) {
@@ -18,7 +19,7 @@ module.exports = class Connection extends EventEmitter {
 
   push (message) {
     if (this._connection) {
-      this._connection.push(encode(message))
+      this._connection.push(encoding(message))
     } else {
       if (!this._connecting) {
         this._getConnection()
@@ -83,16 +84,8 @@ module.exports = class Connection extends EventEmitter {
         peersAddresses
           .filter(
             (peerAddress) => peerAddress.peer.id.toB58String() === peerId)
-          .map(peerAddress => peerAddress.peer)
+            .map(peerAddress => peerAddress.peer)
       )
     })
   }
-}
-
-function encode (_message) {
-  let message = _message
-  if (!Buffer.isBuffer(message)) {
-    message = Buffer.from(message)
-  }
-  return message
 }
