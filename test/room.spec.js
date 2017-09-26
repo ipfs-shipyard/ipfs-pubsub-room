@@ -15,18 +15,6 @@ const createRepo = require('./utils/create-repo-node')
 const topic = 'pubsub-room-test'
 
 const ipfsOptions = {
-  config: {
-    Addresses: {
-      Swarm: [
-        '/libp2p-webrtc-star/dns4/star-signal.cloud.ipfs.team/wss'
-      ]
-    },
-    Discovery: {
-      webRTCStar: {
-        Enabled: true
-      }
-    }
-  },
   EXPERIMENTAL: {
     pubsub: true
   }

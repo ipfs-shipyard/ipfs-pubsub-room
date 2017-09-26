@@ -4,10 +4,10 @@
   "description": "IPFS pub-sub room",
   "main": "src/index.js",
   "scripts": {
-    "lint": "aegir-lint",
+    "lint": "aegir lint",
     "test": "npm run lint && npm run test:browser",
-    "test:browser": "aegir-test browser --dom",
-    "test:node": "aegir-test node"
+    "test:browser": "aegir test --target browser --dom",
+    "test:node": "aegir test --target node"
   },
   "repository": {
     "type": "git",
@@ -30,14 +30,14 @@
     "hyperdiff": "^2.0.2",
     "lodash.clonedeep": "^4.5.0",
     "pull-pushable": "^2.1.1",
-    "pull-stream": "^3.6.0"
+    "pull-stream": "^3.6.1"
   },
   "devDependencies": {
-    "aegir": "^11.0.2",
+    "aegir": "^12.0.8",
     "async": "^2.4.1",
     "chai": "^4.0.2",
     "dirty-chai": "^2.0.0",
-    "ipfs": "^0.25.2"
+    "ipfs": "^0.26.0"
   },
   "browser": {
     "./test/utils/create-repo-node.js": "./test/utils/create-repo-browser.js"
