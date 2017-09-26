@@ -6,8 +6,7 @@
   "scripts": {
     "lint": "aegir lint",
     "test": "npm run lint && npm run test:browser",
-    "test:browser": "aegir test --target browser --dom",
-    "test:node": "aegir test --target node"
+    "test:browser": "aegir test --target browser --dom"
   },
   "repository": {
     "type": "git",
