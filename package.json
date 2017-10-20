@@ -29,7 +29,8 @@
     "hyperdiff": "^2.0.3",
     "lodash.clonedeep": "^4.5.0",
     "pull-pushable": "^2.1.1",
-    "pull-stream": "^3.6.1"
+    "pull-stream": "^3.6.1",
+    "safe-buffer": "^5.1.1"
   },
   "devDependencies": {
     "async": "^2.5.0",
