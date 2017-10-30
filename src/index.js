@@ -135,9 +135,18 @@ class PubSubRoom extends EventEmitter {
       pull(
         conn,
         pull.map((message) => {
+          // We should use the same sequence number generation as js-libp2p-floosub does:
+          // const seqno = Buffer.from(utils.randomSeqno())
+
+          // Until we figure out a good way to bring in the js-libp2p-floosub's randomSeqno
+          // generator, let's use -1 as the sequence number for all private messages
+          const seqno = Buffer.from(-1)
+
           this.emit('message', {
             from: peerId,
-            data: message
+            data: message,
+            seqno: seqno,
+            topicCIDs: [ this._topic ]
           })
           return message
         }),
