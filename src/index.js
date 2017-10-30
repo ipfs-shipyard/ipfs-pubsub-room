@@ -90,7 +90,9 @@ class PubSubRoom extends EventEmitter {
     })
 
     this.once('stop', () => {
-      this._ipfs.pubsub.unsubscribe(this._topic, listener)
+      if (this._ipfs.state.stopped()) {
+        this._ipfs.pubsub.unsubscribe(this._topic, listener)
+      }
     })
 
     this._ipfs._libp2pNode.handle(PROTOCOL, this._handleDirectConnection.bind(this))
@@ -140,7 +142,7 @@ class PubSubRoom extends EventEmitter {
 
           // Until we figure out a good way to bring in the js-libp2p-floosub's randomSeqno
           // generator, let's use -1 as the sequence number for all private messages
-          const seqno = Buffer.from(-1)
+          const seqno = Buffer.from('-1')
 
           this.emit('message', {
             from: peerId,
