@@ -5,6 +5,7 @@ const EventEmitter = require('events')
 const timers = require('timers')
 const clone = require('lodash.clonedeep')
 const pull = require('pull-stream')
+const Buffer = require('safe-buffer').Buffer
 
 const PROTOCOL = require('./protocol')
 const Connection = require('./connection')
@@ -139,8 +140,8 @@ class PubSubRoom extends EventEmitter {
           // const seqno = Buffer.from(utils.randomSeqno())
 
           // Until we figure out a good way to bring in the js-libp2p-floosub's randomSeqno
-          // generator, let's use -1 as the sequence number for all private messages
-          const seqno = Buffer.from(-1)
+          // generator, let's use 0 as the sequence number for all private messages
+          const seqno = Buffer.from([0])
 
           this.emit('message', {
             from: peerId,
