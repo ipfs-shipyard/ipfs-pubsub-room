@@ -32,14 +32,13 @@ class PubSubRoom extends EventEmitter {
       throw new Error('This IPFS node does not have pubsub.')
     }
 
-    // if (this._ipfs.isOnline()) {
-    //   this._start()
-    // }
-    // this._ipfs.on('ready', this._start.bind(this))
+    if (this._ipfs.isOnline()) {
+      this._start()
+    } else {
+      this._ipfs.on('ready', this._start.bind(this))
+    }
 
     this._ipfs.on('stop', this.leave.bind(this))
-
-    this._start()
   }
 
   getPeers () {
