@@ -15,18 +15,6 @@ const createRepo = require('./utils/create-repo-node')
 const topic = 'pubsub-room-test'
 
 const ipfsOptions = {
-  config: {
-    Addresses: {
-      Swarm: [
-        '/libp2p-webrtc-star/dns4/star-signal.cloud.ipfs.team/wss'
-      ]
-    },
-    Discovery: {
-      webRTCStar: {
-        Enabled: true
-      }
-    }
-  },
   EXPERIMENTAL: {
     pubsub: true
   }
@@ -109,6 +97,8 @@ describe('sync', () => {
     room2.sendTo(id1, 'message 2')
     room1.once('message', (message) => {
       expect(message.from).to.equal(id2)
+      expect(message.seqno).to.equal(Buffer.from('-1'))
+      expect(message.topic).to.equal([room2._topic])
       expect(message.data.toString()).to.equal('message 2')
       done()
     })

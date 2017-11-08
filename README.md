@@ -19,9 +19,30 @@ $ npm install ipfs-pubsub-room
 
 ```js
 const Room = require('ipfs-pubsub-room')
-const ipfs = new IPFS()
+const IPFS = require('ipfs')
+const ipfs = new IPFS({
+  EXPERIMENTAL: {
+    pubsub: true
+  }
+})
 
-const room = Room(ipfs, 'room-name')
+// IPFS node is ready, so we can start using ipfs-pubsub-room
+ipfs.on('ready', () => {
+  const room = Room(ipfs, 'room-name')
+
+  room.on('peer joined', (peer) => {
+    console.log('Peer joined the room', peer)
+  })
+
+  room.on('peer left', (peer) => {
+    console.log('Peer left...', peer)
+  })
+
+  // now started to listen to room
+  room.on('subscribed', () => {
+    console.log('Now connected!')
+  })
+})
 ```
 
 ## API
