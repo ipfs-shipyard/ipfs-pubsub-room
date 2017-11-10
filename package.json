@@ -1,6 +1,6 @@
 {
   "name": "ipfs-pubsub-room",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "IPFS pub-sub room",
   "main": "src/index.js",
   "scripts": {
