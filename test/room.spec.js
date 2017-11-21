@@ -20,7 +20,8 @@ const ipfsOptions = {
   }
 }
 
-describe('sync', () => {
+describe('sync', function () {
+  this.timeout(30000)
   const repos = []
   let node1, node2
   let id1, id2
