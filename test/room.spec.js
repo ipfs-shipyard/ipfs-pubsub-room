@@ -99,6 +99,7 @@ describe('sync', function () {
     room1.once('message', (message) => {
       expect(message.from).to.equal(id2)
       expect(message.seqno.toString()).to.equal(Buffer.from([0]).toString())
+      expect(message.topicIDs).to.deep.equal([room2._topic])
       expect(message.topicCIDs).to.deep.equal([room2._topic])
       expect(message.data.toString()).to.equal('message 2')
       done()
