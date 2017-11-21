@@ -146,6 +146,7 @@ class PubSubRoom extends EventEmitter {
             from: peerId,
             data: message,
             seqno: seqno,
+            topicIDs: [ this._topic ],
             topicCIDs: [ this._topic ]
           })
           return message
