@@ -72,7 +72,24 @@ class PubSubRoom extends EventEmitter {
       conn = new Connection(peer, this._ipfs, this)
       conn.on('error', (err) => this.emit('error', err))
     }
-    conn.push(message)
+
+    // We should use the same sequence number generation as js-libp2p-floosub does:
+    // const seqno = Buffer.from(utils.randomSeqno())
+
+    // Until we figure out a good way to bring in the js-libp2p-floosub's randomSeqno
+    // generator, let's use 0 as the sequence number for all private messages
+    // const seqno = Buffer.from([0])
+    const seqno = Buffer.from([0])
+
+    const msg = {
+      from: this._ipfs._peerInfo.id._idB58String,
+      data: Buffer.from(message).toString('hex'),
+      seqno: seqno.toString('hex'),
+      topicIDs: [ this._topic ],
+      topicCIDs: [ this._topic ]
+    }
+
+    conn.push(Buffer.from(JSON.stringify(msg)))
   }
 
   _start () {
@@ -127,7 +144,7 @@ class PubSubRoom extends EventEmitter {
   _handleDirectConnection (protocol, conn) {
     conn.getPeerInfo((err, peerInfo) => {
       if (err) {
-        throw err
+        return this.emit('error', err)
       }
 
       const peerId = peerInfo.id.toB58String()
@@ -135,26 +152,37 @@ class PubSubRoom extends EventEmitter {
       pull(
         conn,
         pull.map((message) => {
-          // We should use the same sequence number generation as js-libp2p-floosub does:
-          // const seqno = Buffer.from(utils.randomSeqno())
+          let msg
+          try {
+            msg = JSON.parse(message.toString())
+          } catch (err) {
+            this.emit('warning', err.message)
+            return // early
+          }
 
-          // Until we figure out a good way to bring in the js-libp2p-floosub's randomSeqno
-          // generator, let's use 0 as the sequence number for all private messages
-          const seqno = Buffer.from([0])
+          if (peerId !== msg.from) {
+            this.emit('warning', 'no peerid match ' + msg.from)
+            return // early
+          }
 
-          this.emit('message', {
-            from: peerId,
-            data: message,
-            seqno: seqno,
-            topicIDs: [ this._topic ],
-            topicCIDs: [ this._topic ]
-          })
+          const topicIDs = msg.topicIDs
+          if (!Array.isArray(topicIDs)) {
+            this.emit('warning', 'no topic IDs')
+            return // early
+          }
+
+          if (topicIDs.indexOf(this._topic) >= 0) {
+            msg.data = Buffer.from(msg.data, 'hex')
+            msg.seqno = Buffer.from(msg.seqno, 'hex')
+            this.emit('message', msg)
+          }
+
           return message
         }),
         pull.onEnd((err) => {
           // do nothinfg
           if (err) {
-            this.emit('warning', err)
+            this.emit('error', err)
           }
         })
       )
