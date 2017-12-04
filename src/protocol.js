@@ -1,3 +1,3 @@
 'use strict'
 
-module.exports = 'ipfs-pubsub-room/v1'
+module.exports = 'ipfs-pubsub-room/v2'

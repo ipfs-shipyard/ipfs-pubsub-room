@@ -1,4 +1,5 @@
 /* eslint-env mocha */
+/* eslint max-nested-callbacks: ["error", 5] */
 'use strict'
 
 const chai = require('chai')
@@ -12,7 +13,7 @@ const clone = require('lodash.clonedeep')
 const Room = require('../')
 const createRepo = require('./utils/create-repo-node')
 
-const topic = 'pubsub-room-test-' + Date.now() + '-' + Math.random()
+const topicBase = 'pubsub-room-test-' + Date.now() + '-' + Math.random()
 
 const ipfsOptions = {
   EXPERIMENTAL: {
@@ -66,58 +67,77 @@ describe('sync', function () {
     })
   })
 
-  after((done) => each(repos, (repo, cb) => repo.teardown(cb), done))
+  after((done) => each(repos, (repo, cb) => { repo.teardown(cb) }, done))
 
-  it('can create a room, and they find each other', (done) => {
-    room1 = Room(node1, topic)
-    room2 = Room(node2, topic)
-    let left = 2
-    room1.once('peer joined', (id) => {
-      expect(id).to.equal(id2)
-      if (--left === 0) {
+  ;([1, 2].forEach((n) => {
+    const topic = topicBase + '-' + n
+    describe('topic ' + n, () => {
+      it('can create a room, and they find each other', (done) => {
+        room1 = Room(node1, topic)
+        room2 = Room(node2, topic)
+        room1.on('warning', console.log)
+        room2.on('warning', console.log)
+
+        let left = 2
+        room1.once('peer joined', (id) => {
+          expect(id).to.equal(id2)
+          if (--left === 0) {
+            done()
+          }
+        })
+        room2.once('peer joined', (id) => {
+          expect(id).to.equal(id1)
+          if (--left === 0) {
+            done()
+          }
+        })
+      })
+
+      it('has peer', (done) => {
+        expect(room1.getPeers()).to.deep.equal([id2])
+        expect(room2.getPeers()).to.deep.equal([id1])
         done()
-      }
-    })
-    room2.once('peer joined', (id) => {
-      expect(id).to.equal(id1)
-      if (--left === 0) {
-        done()
-      }
-    })
-  })
+      })
 
-  it('has peer', (done) => {
-    expect(room1.getPeers()).to.deep.equal([id2])
-    expect(room2.getPeers()).to.deep.equal([id1])
-    done()
-  })
+      it('can broadcast', (done) => {
+        let gotMessage = false
+        room1.on('message', (message) => {
+          if (gotMessage) {
+            throw new Error('double message')
+          }
+          gotMessage = true
+          expect(message.from).to.equal(id2)
+          expect(message.data.toString()).to.equal('message 1')
+          done()
+        })
+        room2.broadcast('message 1')
+      })
 
-  it('can broadcast', (done) => {
-    room1.broadcast('message 1')
-    room2.once('message', (message) => {
-      expect(message.from).to.equal(id1)
-      expect(message.data.toString()).to.equal('message 1')
-      done()
-    })
-  })
+      it('can send private message', (done) => {
+        let gotMessage = false
 
-  it('can send private message', (done) => {
-    room2.sendTo(id1, 'message 2')
-    room1.once('message', (message) => {
-      expect(message.from).to.equal(id2)
-      expect(message.seqno.toString()).to.equal(Buffer.from([0]).toString())
-      expect(message.topicIDs).to.deep.equal([room2._topic])
-      expect(message.topicCIDs).to.deep.equal([room2._topic])
-      expect(message.data.toString()).to.equal('message 2')
-      done()
-    })
-  })
+        room2.on('message', (message) => {
+          if (gotMessage) {
+            throw new Error('double message')
+          }
+          gotMessage = true
+          expect(message.from).to.equal(id1)
+          expect(message.seqno.toString()).to.equal(Buffer.from([0]).toString())
+          expect(message.topicIDs).to.deep.equal([topic])
+          expect(message.topicCIDs).to.deep.equal([topic])
+          expect(message.data.toString()).to.equal('message 2')
+          done()
+        })
+        room1.sendTo(id2, 'message 2')
+      })
 
-  it('can be stopped', (done) => {
-    room1.once('peer left', (peer) => {
-      expect(peer).to.equal(id2)
-      done()
+      it('can leave room', (done) => {
+        room1.once('peer left', (peer) => {
+          expect(peer).to.equal(id2)
+          done()
+        })
+        room2.leave()
+      })
     })
-    room2.leave()
-  })
+  }))
 })
