@@ -12,11 +12,18 @@ const clone = require('lodash.clonedeep')
 const Room = require('../')
 const createRepo = require('./utils/create-repo-node')
 
-const topic = 'pubsub-room-test'
+const topic = 'pubsub-room-test-' + Date.now() + '-' + Math.random()
 
 const ipfsOptions = {
   EXPERIMENTAL: {
     pubsub: true
+  },
+  config: {
+    Addresses: {
+      Swarm: [
+        '/dns4/ws-star.discovery.libp2p.io/tcp/443/wss/p2p-websocket-star'
+      ]
+    }
   }
 }
 
