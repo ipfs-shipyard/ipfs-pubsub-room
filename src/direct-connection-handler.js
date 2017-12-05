@@ -47,9 +47,6 @@ function handler (protocol, conn) {
       }),
       pull.onEnd((err) => {
         // do nothinfg
-        if (err) {
-          emitter.emit('error', err)
-        }
       })
     )
   })
