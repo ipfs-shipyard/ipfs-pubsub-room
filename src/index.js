@@ -4,12 +4,12 @@ const diff = require('hyperdiff')
 const EventEmitter = require('events')
 const timers = require('timers')
 const clone = require('lodash.clonedeep')
-const pull = require('pull-stream')
 const Buffer = require('safe-buffer').Buffer
 
 const PROTOCOL = require('./protocol')
 const Connection = require('./connection')
 const encoding = require('./encoding')
+const directConnection = require('./direct-connection-handler')
 
 const DEFAULT_OPTIONS = {
   pollInterval: 1000
@@ -27,6 +27,8 @@ class PubSubRoom extends EventEmitter {
     this._options = Object.assign({}, clone(DEFAULT_OPTIONS), clone(options))
     this._peers = []
     this._connections = {}
+
+    this._handleDirectMessage = this._handleDirectMessage.bind(this)
 
     if (!this._ipfs.pubsub) {
       throw new Error('This IPFS node does not have pubsub.')
@@ -54,6 +56,7 @@ class PubSubRoom extends EventEmitter {
     Object.keys(this._connections).forEach((peer) => {
       this._connections[peer].stop()
     })
+    directConnection.emitter.removeListener(this._topic, this._handleDirectMessage)
     this.emit('stop')
   }
 
@@ -82,7 +85,8 @@ class PubSubRoom extends EventEmitter {
     const seqno = Buffer.from([0])
 
     const msg = {
-      from: this._ipfs._peerInfo.id._idB58String,
+      to: peer,
+      from: this._ipfs._peerInfo.id.toB58String(),
       data: Buffer.from(message).toString('hex'),
       seqno: seqno.toString('hex'),
       topicIDs: [ this._topic ],
@@ -110,7 +114,9 @@ class PubSubRoom extends EventEmitter {
       this._ipfs.pubsub.unsubscribe(this._topic, listener)
     })
 
-    this._ipfs._libp2pNode.handle(PROTOCOL, this._handleDirectConnection.bind(this))
+    this._ipfs._libp2pNode.handle(PROTOCOL, directConnection.handler)
+
+    directConnection.emitter.on(this._topic, this._handleDirectMessage)
   }
 
   _pollPeers () {
@@ -141,51 +147,11 @@ class PubSubRoom extends EventEmitter {
     this.emit('message', message)
   }
 
-  _handleDirectConnection (protocol, conn) {
-    conn.getPeerInfo((err, peerInfo) => {
-      if (err) {
-        return this.emit('error', err)
-      }
-
-      const peerId = peerInfo.id.toB58String()
-
-      pull(
-        conn,
-        pull.map((message) => {
-          let msg
-          try {
-            msg = JSON.parse(message.toString())
-          } catch (err) {
-            this.emit('warning', err.message)
-            return // early
-          }
-
-          if (peerId !== msg.from) {
-            this.emit('warning', 'no peerid match ' + msg.from)
-            return // early
-          }
-
-          const topicIDs = msg.topicIDs
-          if (!Array.isArray(topicIDs)) {
-            this.emit('warning', 'no topic IDs')
-            return // early
-          }
-
-          if (topicIDs.indexOf(this._topic) >= 0) {
-            msg.data = Buffer.from(msg.data, 'hex')
-            msg.seqno = Buffer.from(msg.seqno, 'hex')
-            this.emit('message', msg)
-          }
-
-          return message
-        }),
-        pull.onEnd((err) => {
-          // do nothinfg
-          if (err) {
-            this.emit('error', err)
-          }
-        })
-      )
-    })
+  _handleDirectMessage (message) {
+    if (message.to === this._ipfs._peerInfo.id.toB58String()) {
+      const m = Object.assign({}, message)
+      delete m.to
+      this.emit('message', m)
+    }
   }
 }
