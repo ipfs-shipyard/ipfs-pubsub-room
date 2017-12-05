@@ -45,8 +45,8 @@ function handler (protocol, conn) {
 
         return msg
       }),
-      pull.onEnd((err) => {
-        // do nothinfg
+      pull.onEnd(() => {
+        // do nothing
       })
     )
   })
