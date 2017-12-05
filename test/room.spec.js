@@ -28,12 +28,11 @@ const ipfsOptions = {
   }
 }
 
-describe('sync', function () {
+describe('room', function () {
   this.timeout(30000)
   const repos = []
   let node1, node2
   let id1, id2
-  let room1, room2
 
   before((done) => {
     const repo = createRepo()
@@ -71,6 +70,7 @@ describe('sync', function () {
 
   ;([1, 2].forEach((n) => {
     const topic = topicBase + '-' + n
+    let room1, room2
     describe('topic ' + n, () => {
       it('can create a room, and they find each other', (done) => {
         room1 = Room(node1, topic)
@@ -103,7 +103,7 @@ describe('sync', function () {
         let gotMessage = false
         room1.on('message', (message) => {
           if (gotMessage) {
-            throw new Error('double message')
+            throw new Error('double message:' + message.data.toString())
           }
           gotMessage = true
           expect(message.from).to.equal(id2)
