@@ -21,8 +21,8 @@ module.exports = class Connection extends EventEmitter {
     if (this._connection) {
       this._connection.push(encoding(message))
     } else {
+      this.once('connect', () => this.push(message))
       if (!this._connecting) {
-        this.once('connect', () => this.push(message))
         this._getConnection()
       }
     }
