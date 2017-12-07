@@ -9,7 +9,8 @@ const emitter = new EventEmitter()
 function handler (protocol, conn) {
   conn.getPeerInfo((err, peerInfo) => {
     if (err) {
-      return this.emit('error', err)
+      console.log(err)
+      return
     }
 
     const peerId = peerInfo.id.toB58String()
