@@ -75,6 +75,12 @@ class PubSubRoom extends EventEmitter {
       conn = new Connection(peer, this._ipfs, this)
       conn.on('error', (err) => this.emit('error', err))
       this._connections[peer] = conn
+
+      conn.once('disconnect', () => {
+        delete this._connections[peer]
+        this._peers = this._peers.filter((p) => p !== peer)
+        this.emit('peer left', peer)
+      })
     }
 
     // We should use the same sequence number generation as js-libp2p-floosub does:

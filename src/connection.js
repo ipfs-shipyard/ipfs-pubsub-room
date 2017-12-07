@@ -58,7 +58,10 @@ module.exports = class Connection extends EventEmitter {
         pull(
           pushable,
           conn,
-          pull.onEnd(() => delete this._connection)
+          pull.onEnd(() => {
+            delete this._connection
+            this.emit('disconnect')
+          })
         )
         this.emit('connect', pushable)
       })
