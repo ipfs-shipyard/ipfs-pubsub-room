@@ -43,13 +43,13 @@ module.exports = class Connection extends EventEmitter {
       }
 
       if (!peerAddresses.length) {
-        this.emit('error', new Error('could not connect to ' + this._id))
+        this.emit('disconnect')
         return // early
       }
 
       this._ipfs._libp2pNode.dial(peerAddresses[0], PROTOCOL, (err, conn) => {
         if (err) {
-          this.emit('error', err)
+          this.emit('disconnect')
           return // early
         }
         this._connecting = false
