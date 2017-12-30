@@ -57,9 +57,12 @@ describe('same node', function () {
   it('mirrors broadcast', (done) => {
     rooms[0].once('message', (message) => {
       expect(message.data.toString()).to.equal('message 1')
-      done()
+      rooms[0].once('message', (message) => {
+        expect(message.data.toString()).to.equal('message 2')
+        done()
+      })
     })
-
     rooms[1].broadcast('message 1')
+    rooms[1].broadcast('message 2')
   })
 })
