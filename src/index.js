@@ -52,7 +52,7 @@ class PubSubRoom extends EventEmitter {
   }
 
   leave () {
-    timers.clearInterval()
+    timers.clearInterval(this._interval)
     Object.keys(this._connections).forEach((peer) => {
       this._connections[peer].stop()
     })
