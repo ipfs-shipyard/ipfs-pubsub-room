@@ -47,7 +47,7 @@ module.exports = class Connection extends EventEmitter {
         return // early
       }
 
-      this._ipfs._libp2pNode.dial(peerAddresses[0], PROTOCOL, (err, conn) => {
+      this._ipfs._libp2pNode.dialProtocol(peerAddresses[0], PROTOCOL, (err, conn) => {
         if (err) {
           this.emit('disconnect')
           return // early
