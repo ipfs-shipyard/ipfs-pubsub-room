@@ -9,6 +9,10 @@
 
 ([Demo video](https://t.co/HNYQGE4D4P))
 
+## js-ipfs
+
+This package has been tested with js-ipfs version __0.28.0__.
+
 ## Install
 
 ```bash
