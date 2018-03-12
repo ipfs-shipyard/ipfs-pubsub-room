@@ -50,6 +50,8 @@ describe('same node', function () {
     }
   })
 
+  after(() => rooms.forEach((room) => room.leave()))
+
   after((done) => node.stop(done))
 
   after((done) => repo.teardown(done))
