@@ -6,6 +6,7 @@ const Pushable = require('pull-pushable')
 
 const PROTOCOL = require('./protocol')
 const encoding = require('./encoding')
+const getPeerId = require('./peer-id')
 
 module.exports = class Connection extends EventEmitter {
   constructor (id, ipfs, room) {
@@ -78,7 +79,7 @@ module.exports = class Connection extends EventEmitter {
       callback(
         null,
         peersAddresses
-          .filter((peerAddress) => peerAddress.peer.id.toB58String() === peerId)
+          .filter((peerAddress) => getPeerId(peerAddress.peer) === peerId)
           .map(peerAddress => peerAddress.peer))
     })
   }
