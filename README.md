@@ -11,7 +11,7 @@
 
 ## js-ipfs
 
-This package has been tested with js-ipfs version __0.28.0__.
+This package has been tested with js-ipfs version __0.29.1__.
 
 ## Install
 
@@ -77,7 +77,7 @@ Broacasts message (string or buffer).
 
 Sends message (string or buffer) to peer.
 
-## room.leave()
+## async room.leave()
 
 Leaves room, stopping everything.
 

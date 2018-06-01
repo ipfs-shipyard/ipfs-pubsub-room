@@ -52,12 +52,15 @@ class PubSubRoom extends EventEmitter {
   }
 
   leave () {
-    timers.clearInterval(this._interval)
-    Object.keys(this._connections).forEach((peer) => {
-      this._connections[peer].stop()
+    return new Promise((resolve, reject) => {
+      timers.clearInterval(this._interval)
+      Object.keys(this._connections).forEach((peer) => {
+        this._connections[peer].stop()
+      })
+      directConnection.emitter.removeListener(this._topic, this._handleDirectMessage)
+      this.once('stopped', () => resolve())
+      this.emit('stopping')
     })
-    directConnection.emitter.removeListener(this._topic, this._handleDirectMessage)
-    this.emit('stop')
   }
 
   broadcast (_message) {
@@ -117,8 +120,14 @@ class PubSubRoom extends EventEmitter {
       }
     })
 
-    this.once('stop', () => {
-      this._ipfs.pubsub.unsubscribe(this._topic, listener)
+    this.once('stopping', () => {
+      this._ipfs.pubsub.unsubscribe(this._topic, listener, (err) => {
+        if (err) {
+          this.emit('error', err)
+        } else {
+          this.emit('stopped')
+        }
+      })
     })
 
     this._ipfs._libp2pNode.handle(PROTOCOL, directConnection.handler)
