@@ -1,14 +1,45 @@
-machine:
-  node:
-    version: stable
-
-dependencies:
-  pre:
-    - google-chrome --version
-    - curl -L -o google-chrome.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-    - sudo dpkg -i google-chrome.deb || true
-    - sudo apt-get update
-    - sudo apt-get install -f
-    - sudo apt-get install --only-upgrade lsb-base
-    - sudo dpkg -i google-chrome.deb
-    - google-chrome --version
+version: 2
+jobs:
+  build:
+    working_directory: ~/ipfs-shipyard/ipfs-pubsub-room
+    parallelism: 1
+    shell: /bin/bash --login
+    environment:
+      CIRCLE_ARTIFACTS: /tmp/circleci-artifacts
+      CIRCLE_TEST_REPORTS: /tmp/circleci-test-results
+    docker:
+    - image: circleci/build-image:ubuntu-14.04-XXL-upstart-1189-5614f37
+      command: /sbin/init
+    steps:
+    - checkout
+    - run: mkdir -p $CIRCLE_ARTIFACTS $CIRCLE_TEST_REPORTS
+    - run:
+        working_directory: ~/ipfs-shipyard/ipfs-pubsub-room
+        command: nvm install stable && nvm alias default stable
+    - restore_cache:
+        keys:
+        - v1-dep-{{ .Branch }}-
+        - v1-dep-master-
+        - v1-dep-
+    - run: google-chrome --version
+    - run: curl -L -o google-chrome.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+    - run: sudo dpkg -i google-chrome.deb || true
+    - run: sudo apt-get update
+    - run: sudo apt-get install -f
+    - run: sudo apt-get install --only-upgrade lsb-base
+    - run: sudo dpkg -i google-chrome.deb
+    - run: google-chrome --version
+    - run: if [ -z "${NODE_ENV:-}" ]; then export NODE_ENV=test; fi
+    - run: export PATH="~/ipfs-shipyard/ipfs-pubsub-room/node_modules/.bin:$PATH"
+    - run: npm install
+    - save_cache:
+        key: v1-dep-{{ .Branch }}-{{ epoch }}
+        paths:
+        - ./node_modules
+    - run: npm test
+    - store_test_results:
+        path: /tmp/circleci-test-results
+    - store_artifacts:
+        path: /tmp/circleci-artifacts
+    - store_artifacts:
+        path: /tmp/circleci-test-results
