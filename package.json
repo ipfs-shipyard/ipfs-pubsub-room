@@ -5,9 +5,9 @@
   "main": "src/index.js",
   "scripts": {
     "lint": "aegir lint",
-    "test": "npm run lint && npm run test:node && npm run test:browser",
-    "test:node": "aegir test --target node",
-    "test:browser": "aegir test --target browser --dom"
+    "test": "npm run test -t node -t browser",
+    "test:node": "aegir test -t node",
+    "test:browser": "aegir test - browser"
   },
   "repository": {
     "type": "git",
@@ -27,18 +27,17 @@
   },
   "homepage": "https://github.com/ipfs-shipyard/ipfs-pubsub-room#readme",
   "dependencies": {
-    "hyperdiff": "^2.0.3",
+    "hyperdiff": "^2.0.5",
     "lodash.clonedeep": "^4.5.0",
-    "pull-pushable": "^2.1.1",
-    "pull-stream": "^3.6.1",
-    "safe-buffer": "^5.1.1"
+    "pull-pushable": "^2.2.0",
+    "pull-stream": "^3.6.8"
   },
   "devDependencies": {
-    "async": "^2.5.0",
-    "chai": "^4.1.1",
+    "async": "^2.6.1",
+    "chai": "^4.1.2",
     "dirty-chai": "^2.0.1",
-    "aegir": "^12.1.3",
-    "ipfs": "~0.29.1"
+    "aegir": "^15.0.0",
+    "ipfs": "~0.30.0"
   },
   "browser": {
     "./test/utils/create-repo-node.js": "./test/utils/create-repo-browser.js"

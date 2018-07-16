@@ -4,7 +4,6 @@ const diff = require('hyperdiff')
 const EventEmitter = require('events')
 const timers = require('timers')
 const clone = require('lodash.clonedeep')
-const Buffer = require('safe-buffer').Buffer
 
 const PROTOCOL = require('./protocol')
 const Connection = require('./connection')
