@@ -1,7 +1,6 @@
 'use strict'
 
 const pull = require('pull-stream')
-const Buffer = require('safe-buffer').Buffer
 const EventEmitter = require('events')
 
 const emitter = new EventEmitter()
