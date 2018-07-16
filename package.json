@@ -5,7 +5,7 @@
   "main": "src/index.js",
   "scripts": {
     "lint": "aegir lint",
-    "test": "npm run test -t node -t browser",
+    "test": "aegir test",
     "test:node": "aegir test -t node",
     "test:browser": "aegir test - browser"
   },

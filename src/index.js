@@ -64,6 +64,7 @@ class PubSubRoom extends EventEmitter {
 
   broadcast (_message) {
     let message = encoding(_message)
+
     this._ipfs.pubsub.publish(this._topic, message, (err) => {
       if (err) {
         this.emit('error', err)
@@ -111,7 +112,7 @@ class PubSubRoom extends EventEmitter {
       this._options.pollInterval)
 
     const listener = this._onMessage.bind(this)
-    this._ipfs.pubsub.subscribe(this._topic, listener, (err) => {
+    this._ipfs.pubsub.subscribe(this._topic, listener, {}, (err) => {
       if (err) {
         this.emit('error', err)
       } else {
