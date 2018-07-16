@@ -11,7 +11,7 @@
 
 ## js-ipfs
 
-This package has been tested with js-ipfs version __0.29.1__.
+This package has been tested with js-ipfs version __0.30.0__.
 
 ## Install
 
