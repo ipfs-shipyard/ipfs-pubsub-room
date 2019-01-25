@@ -30,14 +30,14 @@
     "hyperdiff": "^2.0.5",
     "lodash.clonedeep": "^4.5.0",
     "pull-pushable": "^2.2.0",
-    "pull-stream": "^3.6.8"
+    "pull-stream": "^3.6.9"
   },
   "devDependencies": {
     "async": "^2.6.1",
-    "chai": "^4.1.2",
+    "chai": "^4.2.0",
     "dirty-chai": "^2.0.1",
-    "aegir": "^15.0.0",
-    "ipfs": "~0.32.0"
+    "aegir": "^18.0.3",
+    "ipfs": "~0.34.4"
   },
   "browser": {
     "./test/utils/create-repo-node.js": "./test/utils/create-repo-browser.js"
