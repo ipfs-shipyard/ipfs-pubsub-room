@@ -7,6 +7,7 @@ const Pushable = require('pull-pushable')
 const PROTOCOL = require('./protocol')
 const encoding = require('./encoding')
 const getPeerId = require('./peer-id')
+const libp2p = require('./libp2p')
 
 module.exports = class Connection extends EventEmitter {
   constructor (id, ipfs, room) {
@@ -48,7 +49,7 @@ module.exports = class Connection extends EventEmitter {
         return // early
       }
 
-      this._ipfs._libp2pNode.dialProtocol(peerAddresses[0], PROTOCOL, (err, conn) => {
+      libp2p(this._ipfs).dialProtocol(peerAddresses[0], PROTOCOL, (err, conn) => {
         if (err) {
           this.emit('disconnect')
           return // early
