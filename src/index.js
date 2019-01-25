@@ -9,6 +9,7 @@ const PROTOCOL = require('./protocol')
 const Connection = require('./connection')
 const encoding = require('./encoding')
 const directConnection = require('./direct-connection-handler')
+const libp2p = require('./libp2p')
 
 const DEFAULT_OPTIONS = {
   pollInterval: 1000
@@ -130,7 +131,7 @@ class PubSubRoom extends EventEmitter {
       })
     })
 
-    this._ipfs._libp2pNode.handle(PROTOCOL, directConnection.handler)
+    libp2p(this._ipfs).handle(PROTOCOL, directConnection.handler)
 
     directConnection.emitter.on(this._topic, this._handleDirectMessage)
   }
