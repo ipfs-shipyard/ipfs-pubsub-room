@@ -37,7 +37,7 @@
     "chai": "^4.2.0",
     "dirty-chai": "^2.0.1",
     "aegir": "^18.0.3",
-    "ipfs": "~0.34.4"
+    "ipfs": "0.39.0-rc.0"
   },
   "browser": {
     "./test/utils/create-repo-node.js": "./test/utils/create-repo-browser.js"

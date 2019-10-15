@@ -52,9 +52,9 @@ describe('same node', function () {
 
   after(() => rooms.forEach((room) => room.leave()))
 
-  after((done) => node.stop(done))
+  after(() => node.stop())
 
-  after((done) => repo.teardown(done))
+  after(() => repo.teardown())
 
   it('mirrors broadcast', (done) => {
     rooms[0].once('message', (message) => {

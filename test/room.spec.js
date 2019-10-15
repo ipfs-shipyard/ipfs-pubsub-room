@@ -7,7 +7,6 @@ chai.use(require('dirty-chai'))
 const expect = chai.expect
 
 const IPFS = require('ipfs')
-const each = require('async/each')
 const clone = require('lodash.clonedeep')
 
 const Room = require('../')
@@ -66,7 +65,11 @@ describe('room', function () {
     })
   })
 
-  after((done) => each(repos, (repo, cb) => { repo.teardown(cb) }, done))
+  after(() => {
+    return Promise.all(
+      repos.map(repo => repo.teardown())
+    )
+  })
 
   ;([1, 2].forEach((n) => {
     const topic = topicBase + '-' + n

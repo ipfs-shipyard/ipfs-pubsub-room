@@ -69,7 +69,11 @@ describe('concurrent rooms', function () {
     })
   })
 
-  after((done) => each(repos, (repo, cb) => { repo.teardown(cb) }, done))
+  after(() => {
+    return Promise.all(
+      repos.map(repo => repo.teardown())
+    )
+  })
 
   it('can create a room, and they find each other', (done) => {
     room1A = Room(node1, topicA)
