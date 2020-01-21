@@ -24,10 +24,7 @@ $ npm install ipfs-pubsub-room
 ```js
 const Room = require('ipfs-pubsub-room')
 const IPFS = require('ipfs')
-const ipfs = new IPFS({
-  EXPERIMENTAL: {
-    pubsub: true
-  },
+const ipfs = await IPFS.create({
   config: {
     Addresses: {
       Swarm: [
@@ -38,21 +35,19 @@ const ipfs = new IPFS({
 })
 
 // IPFS node is ready, so we can start using ipfs-pubsub-room
-ipfs.on('ready', () => {
-  const room = Room(ipfs, 'room-name')
+const room = Room(ipfs, 'room-name')
 
-  room.on('peer joined', (peer) => {
-    console.log('Peer joined the room', peer)
-  })
+room.on('peer joined', (peer) => {
+  console.log('Peer joined the room', peer)
+})
 
-  room.on('peer left', (peer) => {
-    console.log('Peer left...', peer)
-  })
+room.on('peer left', (peer) => {
+  console.log('Peer left...', peer)
+})
 
-  // now started to listen to room
-  room.on('subscribed', () => {
-    console.log('Now connected!')
-  })
+// now started to listen to room
+room.on('subscribed', () => {
+  console.log('Now connected!')
 })
 ```
 
@@ -73,7 +68,7 @@ const room = Room(ipfs, 'some-room-name')
 
 Broacasts message (string or buffer).
 
-## room.sendTo(peer, message)
+## room.sendTo(cid, message)
 
 Sends message (string or buffer) to peer.
 
@@ -85,7 +80,7 @@ Leaves room, stopping everything.
 
 Returns an array of peer identifiers (strings).
 
-## room.hasPeer(peer)
+## room.hasPeer(cid)
 
 Returns a boolean indicating if the given peer is present in the room.
 
@@ -96,11 +91,11 @@ Listens for messages. A `message` is an object containing the following properti
 * `from` (string): peer id
 * `data` (Buffer): message content
 
-## room.on('peer joined', (peer) => {})
+## room.on('peer joined', (cid) => {})
 
 Once a peer has joined the room.
 
-## room.on('peer left', (peer) => {})
+## room.on('peer left', (cid) => {})
 
 Once a peer has left the room.
 

@@ -6,27 +6,13 @@ const chai = require('chai')
 chai.use(require('dirty-chai'))
 const expect = chai.expect
 
-const IPFS = require('ipfs')
-const each = require('async/each')
-const clone = require('lodash.clonedeep')
+const delay = require('delay')
 
-const Room = require('../')
-const createRepo = require('./utils/create-repo-node')
+const PubSubRoom = require('../')
+const createRepo = require('./utils/create-repo')
+const createIpfs = require('./utils/create-ipfs')
 
 const topic = 'pubsub-room-concurrency-test-' + Date.now() + '-' + Math.random()
-
-const ipfsOptions = {
-  EXPERIMENTAL: {
-    pubsub: true
-  },
-  config: {
-    Addresses: {
-      Swarm: [
-        '/dns4/ws-star.discovery.libp2p.io/tcp/443/wss/p2p-websocket-star'
-      ]
-    }
-  }
-}
 
 describe('concurrent rooms', function () {
   this.timeout(30000)
@@ -37,36 +23,34 @@ describe('concurrent rooms', function () {
   const topicA = topic + '-A'
   const topicB = topic + '-B'
 
-  before((done) => {
+  before(async () => {
     const repo = createRepo()
     repos.push(repo)
-    const options = Object.assign({}, clone(ipfsOptions), {
-      repo: repo
-    })
-    node1 = new IPFS(options)
-    node1.once('ready', () => {
-      node1.id((err, info) => {
-        expect(err).to.not.exist()
-        id1 = info.id
-        done()
-      })
-    })
+    node1 = await createIpfs(repo)
+    id1 = (await node1.id()).id
   })
 
-  before((done) => {
+  before(async () => {
     const repo = createRepo()
     repos.push(repo)
-    const options = Object.assign({}, clone(ipfsOptions), {
-      repo: repo
-    })
-    node2 = new IPFS(options)
-    node2.once('ready', () => {
-      node2.id((err, info) => {
-        expect(err).to.not.exist()
-        id2 = info.id
-        done()
-      })
-    })
+    node2 = await createIpfs(repo, node1)
+    id2 = (await node2.id()).id
+  })
+
+  after(() => {
+    return Promise.all([
+      room1A.leave(),
+      room1B.leave(),
+      room2A.leave(),
+      room2B.leave()
+    ])
+  })
+
+  after(() => {
+    return Promise.all([
+      node1.stop(),
+      node2.stop()
+    ])
   })
 
   after(() => {
@@ -75,15 +59,11 @@ describe('concurrent rooms', function () {
     )
   })
 
-  it('can create a room, and they find each other', (done) => {
-    room1A = Room(node1, topicA)
-    room2A = Room(node2, topicA)
-    room1B = Room(node1, topicB)
-    room2B = Room(node2, topicB)
-    room1A.on('warning', console.log)
-    room2A.on('warning', console.log)
-    room1B.on('warning', console.log)
-    room2B.on('warning', console.log)
+  it('can create a room, and they find each other', async () => {
+    room1A = new PubSubRoom(node1, topicA)
+    room2A = new PubSubRoom(node2, topicA)
+    room1B = new PubSubRoom(node1, topicB)
+    room2B = new PubSubRoom(node2, topicB)
 
     const roomNodes = [
       [room1A, id2],
@@ -92,14 +72,19 @@ describe('concurrent rooms', function () {
       [room2A, id1]
     ]
 
-    each(roomNodes, (roomNode, cb) => {
-      const room = roomNode[0]
-      const waitingFor = roomNode[1]
-      room.once('peer joined', (id) => {
-        expect(id).to.equal(waitingFor)
-        cb()
+    await Promise.all(
+      roomNodes.map(async (roomNode) => {
+        const room = roomNode[0]
+        const waitingFor = roomNode[1]
+
+        await new Promise((resolve) => {
+          room.once('peer joined', (peer) => {
+            expect(peer.toString()).to.equal(waitingFor.toString())
+            resolve()
+          })
+        })
       })
-    }, done)
+    )
   })
 
   it('has peer', (done) => {
@@ -119,7 +104,7 @@ describe('concurrent rooms', function () {
         throw new Error('double message')
       }
       gotMessage = true
-      expect(message.from).to.equal(id2)
+      expect(message.from.toString()).to.equal(id2.toString())
       expect(message.data.toString()).to.equal('message 1')
 
       room1B.removeListener('message', crash)
@@ -133,7 +118,7 @@ describe('concurrent rooms', function () {
 
     room2B.on('message', crash)
     room2A.once('message', (message) => {
-      expect(message.from).to.equal(id1)
+      expect(message.from.toString()).to.equal(id1.toString())
       expect(message.seqno.toString()).to.equal(Buffer.from([0]).toString())
       expect(message.topicIDs).to.deep.equal([topicA])
       expect(message.topicCIDs).to.deep.equal([topicA])
@@ -146,17 +131,17 @@ describe('concurrent rooms', function () {
 
   it('can leave room', (done) => {
     room1A.once('peer left', (peer) => {
-      expect(peer).to.equal(id2)
+      expect(peer.toString()).to.equal(id2.toString())
       done()
     })
     room2A.leave()
   })
 
-  it('after leaving, it does not receive more messages', (done) => {
+  it('after leaving, it does not receive more messages', async () => {
     room2A.on('message', Crash('should not receive this'))
-    room2A.leave()
+    await room2A.leave()
     room1A.broadcast('message 3')
-    setTimeout(done, 3000)
+    await delay(3000)
   })
 })
 

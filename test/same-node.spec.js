@@ -6,51 +6,35 @@ const chai = require('chai')
 chai.use(require('dirty-chai'))
 const expect = chai.expect
 
-const IPFS = require('ipfs')
-const clone = require('lodash.clonedeep')
-
-const Room = require('../')
-const createRepo = require('./utils/create-repo-node')
+const PubSubRoom = require('../')
+const createRepo = require('./utils/create-repo')
+const createIpfs = require('./utils/create-ipfs')
 
 const topic = 'pubsub-same-node-test-' + Date.now() + '-' + Math.random()
-
-const ipfsOptions = {
-  EXPERIMENTAL: {
-    pubsub: true
-  },
-  config: {
-    Addresses: {
-      Swarm: [
-        '/dns4/ws-star.discovery.libp2p.io/tcp/443/wss/p2p-websocket-star'
-      ]
-    }
-  }
-}
 
 describe('same node', function () {
   this.timeout(30000)
   let repo
   let node
-  let rooms = []
+  const rooms = []
 
-  before((done) => {
+  before(async () => {
     repo = createRepo()
-    const options = Object.assign({}, clone(ipfsOptions), {
-      repo: repo
-    })
-    node = new IPFS(options)
-    node.once('ready', () => {
-      done()
-    })
+
+    node = await createIpfs(repo)
   })
 
   before(() => {
     for (let i = 0; i < 2; i++) {
-      rooms.push(Room(node, topic))
+      rooms.push(new PubSubRoom(node, topic))
     }
   })
 
-  after(() => rooms.forEach((room) => room.leave()))
+  after(() => {
+    return Promise.all(
+      rooms.map(room => room.leave())
+    )
+  })
 
   after(() => node.stop())
 

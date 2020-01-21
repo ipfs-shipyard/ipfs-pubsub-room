@@ -1,8 +1,8 @@
 'use strict'
 
 module.exports = (peer) => {
-  if (peer.id && (typeof peer.id.toB58String === 'function')) {
+  if (peer.id) {
     peer = peer.id
   }
-  return peer.toB58String()
+  return peer.toString()
 }

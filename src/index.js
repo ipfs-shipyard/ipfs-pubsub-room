@@ -2,22 +2,19 @@
 
 const diff = require('hyperdiff')
 const EventEmitter = require('events')
-const timers = require('timers')
 const clone = require('lodash.clonedeep')
+const CID = require('cids')
 
 const PROTOCOL = require('./protocol')
 const Connection = require('./connection')
 const encoding = require('./encoding')
 const directConnection = require('./direct-connection-handler')
-const libp2p = require('./libp2p')
 
 const DEFAULT_OPTIONS = {
   pollInterval: 1000
 }
 
-module.exports = (ipfs, topic, options) => {
-  return new PubSubRoom(ipfs, topic, options)
-}
+let index = 0
 
 class PubSubRoom extends EventEmitter {
   constructor (ipfs, topic, options) {
@@ -29,18 +26,27 @@ class PubSubRoom extends EventEmitter {
     this._connections = {}
 
     this._handleDirectMessage = this._handleDirectMessage.bind(this)
+    this._handleMessage = this._onMessage.bind(this)
 
     if (!this._ipfs.pubsub) {
       throw new Error('This IPFS node does not have pubsub.')
     }
 
-    if (this._ipfs.isOnline()) {
-      this._start()
-    } else {
-      this._ipfs.on('ready', this._start.bind(this))
+    if (!this._ipfs.libp2p) {
+      throw new Error('This IPFS node does not have libp2p.')
     }
 
-    this._ipfs.on('stop', this.leave.bind(this))
+    this._interval = setInterval(
+      this._pollPeers.bind(this),
+      this._options.pollInterval
+    )
+
+    this._ipfs.libp2p.handle(PROTOCOL, directConnection.handler)
+    directConnection.emitter.on(this._topic, this._handleDirectMessage)
+
+    this._ipfs.pubsub.subscribe(this._topic, this._handleMessage)
+
+    this._idx = index++
   }
 
   getPeers () {
@@ -48,32 +54,26 @@ class PubSubRoom extends EventEmitter {
   }
 
   hasPeer (peer) {
-    return this._peers.indexOf(peer) >= 0
+    return Boolean(this._peers.find(p => p.toString() === peer.toString()))
   }
 
-  leave () {
-    return new Promise((resolve, reject) => {
-      timers.clearInterval(this._interval)
-      Object.keys(this._connections).forEach((peer) => {
-        this._connections[peer].stop()
-      })
-      directConnection.emitter.removeListener(this._topic, this._handleDirectMessage)
-      this.once('stopped', () => resolve())
-      this.emit('stopping')
+  async leave () {
+    clearInterval(this._interval)
+    Object.keys(this._connections).forEach((peer) => {
+      this._connections[peer].stop()
     })
+    directConnection.emitter.removeListener(this._topic, this._handleDirectMessage)
+    this._ipfs.libp2p.unhandle(PROTOCOL, directConnection.handler)
+    await this._ipfs.pubsub.unsubscribe(this._topic, this._handleMessage)
   }
 
-  broadcast (_message) {
-    let message = encoding(_message)
+  async broadcast (_message) {
+    const message = encoding(_message)
 
-    this._ipfs.pubsub.publish(this._topic, message, (err) => {
-      if (err) {
-        this.emit('error', err)
-      }
-    })
+    await this._ipfs.pubsub.publish(this._topic, message)
   }
 
-  sendTo (peer, message) {
+  async sendTo (peer, message) {
     let conn = this._connections[peer]
     if (!conn) {
       conn = new Connection(peer, this._ipfs, this)
@@ -82,7 +82,7 @@ class PubSubRoom extends EventEmitter {
 
       conn.once('disconnect', () => {
         delete this._connections[peer]
-        this._peers = this._peers.filter((p) => p !== peer)
+        this._peers = this._peers.filter((p) => p.toString() !== peer.toString())
         this.emit('peer left', peer)
       })
     }
@@ -97,78 +97,56 @@ class PubSubRoom extends EventEmitter {
 
     const msg = {
       to: peer,
-      from: this._ipfs._peerInfo.id.toB58String(),
+      from: await this._ourId(),
       data: Buffer.from(message).toString('hex'),
       seqno: seqno.toString('hex'),
-      topicIDs: [ this._topic ],
-      topicCIDs: [ this._topic ]
+      topicIDs: [this._topic],
+      topicCIDs: [this._topic]
     }
 
     conn.push(Buffer.from(JSON.stringify(msg)))
   }
 
-  _start () {
-    this._interval = timers.setInterval(
-      this._pollPeers.bind(this),
-      this._options.pollInterval)
+  async _pollPeers () {
+    const newPeers = (await this._ipfs.pubsub.peers(this._topic))
+      .map(id => new CID(1, 'libp2p-key', new CID(id).buffer))
 
-    const listener = this._onMessage.bind(this)
-    this._ipfs.pubsub.subscribe(this._topic, listener, {}, (err) => {
-      if (err) {
-        this.emit('error', err)
-      } else {
-        this.emit('subscribed', this._topic)
-      }
-    })
-
-    this.once('stopping', () => {
-      this._ipfs.pubsub.unsubscribe(this._topic, listener, (err) => {
-        if (err) {
-          this.emit('error', err)
-        } else {
-          this.emit('stopped')
-        }
-      })
-    })
-
-    libp2p(this._ipfs).handle(PROTOCOL, directConnection.handler)
-
-    directConnection.emitter.on(this._topic, this._handleDirectMessage)
-  }
-
-  _pollPeers () {
-    this._ipfs.pubsub.peers(this._topic, (err, _newPeers) => {
-      if (err) {
-        this.emit('error', err)
-        return // early
-      }
-
-      const newPeers = _newPeers.sort()
-
-      if (this._emitChanges(newPeers)) {
-        this._peers = newPeers
-      }
-    })
+    if (this._emitChanges(newPeers)) {
+      this._peers = newPeers
+    }
   }
 
   _emitChanges (newPeers) {
     const differences = diff(this._peers, newPeers)
 
-    differences.added.forEach((addedPeer) => this.emit('peer joined', addedPeer))
-    differences.removed.forEach((removedPeer) => this.emit('peer left', removedPeer))
+    differences.added.forEach((peer) => this.emit('peer joined', peer))
+    differences.removed.forEach((peer) => this.emit('peer left', peer))
 
     return differences.added.length > 0 || differences.removed.length > 0
   }
 
   _onMessage (message) {
-    this.emit('message', message)
+    this.emit('message', {
+      ...message,
+      from: new CID(1, 'libp2p-key', new CID(message.from).buffer)
+    })
   }
 
-  _handleDirectMessage (message) {
-    if (message.to === this._ipfs._peerInfo.id.toB58String()) {
+  async _handleDirectMessage (message) {
+    if (message.to.toString() === (await this._ourId()).toString()) {
       const m = Object.assign({}, message)
       delete m.to
       this.emit('message', m)
     }
   }
+
+  async _ourId () {
+    if (!this._id) {
+      this._id = (await this._ipfs.id()).id
+    }
+
+    return this._id
+  }
 }
+
+module.exports = PubSubRoom
