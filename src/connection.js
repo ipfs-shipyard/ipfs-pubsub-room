@@ -2,11 +2,9 @@
 
 const EventEmitter = require('events')
 const pipe = require('it-pipe')
-const CID = require('cids')
 
 const PROTOCOL = require('./protocol')
 const encoding = require('./encoding')
-const getPeerId = require('./peer-id')
 
 module.exports = class Connection extends EventEmitter {
   constructor (id, ipfs, room) {
@@ -49,8 +47,8 @@ module.exports = class Connection extends EventEmitter {
       return // early
     }
 
-    const peerId = new CID(peerAddresses[0].multihash)
-    const peerInfo = this._ipfs.libp2p.peerStore.get(peerId.toString('base58btc'))
+    const peerId = peerAddresses[0]
+    const peerInfo = this._ipfs.libp2p.peerStore.get(peerId)
     const { stream } = await this._ipfs.libp2p.dialProtocol(peerInfo, PROTOCOL)
     this._connection = new FiFoMessageQueue()
 
@@ -72,7 +70,7 @@ module.exports = class Connection extends EventEmitter {
     const peersAddresses = await this._ipfs.swarm.peers()
 
     return peersAddresses
-      .filter((peerAddress) => getPeerId(peerAddress.peer) === peerId.toString())
+      .filter((peerAddress) => peerAddress.peer === peerId)
       .map(peerAddress => peerAddress.peer)
   }
 }

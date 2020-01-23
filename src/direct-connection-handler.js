@@ -2,12 +2,11 @@
 
 const EventEmitter = require('events')
 const pipe = require('it-pipe')
-const CID = require('cids')
 
 const emitter = new EventEmitter()
 
 function handler ({ connection, stream }) {
-  const peerId = new CID(connection.remotePeer.toString()).toString()
+  const peerId = connection.remotePeer.toB58String()
 
   pipe(
     stream,
@@ -17,8 +16,6 @@ function handler ({ connection, stream }) {
 
         try {
           msg = JSON.parse(message.toString())
-          msg.to = new CID(msg.to.version, msg.to.codec, Buffer.from(msg.to.hash.data))
-          msg.from = new CID(msg.from.version, msg.from.codec, Buffer.from(msg.from.hash.data))
         } catch (err) {
           emitter.emit('warning', err.message)
           continue // early

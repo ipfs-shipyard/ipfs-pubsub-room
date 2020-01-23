@@ -37,7 +37,9 @@
     "delay": "^4.3.0",
     "dirty-chai": "^2.0.1",
     "ipfs": "ipfs/js-ipfs#refactor/async-await-roundup",
-    "ipfsd-ctl": "^1.0.6"
+    "ipfs-repo": "^0.30.1",
+    "ipfsd-ctl": "^1.0.6",
+    "rimraf": "^3.0.0"
   },
   "browser": {
     "./test/utils/create-repo.js": "./test/utils/create-repo-browser.js",

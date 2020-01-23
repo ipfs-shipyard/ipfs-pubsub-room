@@ -79,7 +79,7 @@ describe('concurrent rooms', function () {
 
         await new Promise((resolve) => {
           room.once('peer joined', (peer) => {
-            expect(peer.toString()).to.equal(waitingFor.toString())
+            expect(peer).to.equal(waitingFor)
             resolve()
           })
         })

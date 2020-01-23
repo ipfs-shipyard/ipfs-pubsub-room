@@ -3,7 +3,6 @@
 const diff = require('hyperdiff')
 const EventEmitter = require('events')
 const clone = require('lodash.clonedeep')
-const CID = require('cids')
 
 const PROTOCOL = require('./protocol')
 const Connection = require('./connection')
@@ -108,8 +107,7 @@ class PubSubRoom extends EventEmitter {
   }
 
   async _pollPeers () {
-    const newPeers = (await this._ipfs.pubsub.peers(this._topic))
-      .map(id => new CID(1, 'libp2p-key', new CID(id).buffer))
+    const newPeers = (await this._ipfs.pubsub.peers(this._topic)).sort()
 
     if (this._emitChanges(newPeers)) {
       this._peers = newPeers
@@ -126,10 +124,7 @@ class PubSubRoom extends EventEmitter {
   }
 
   _onMessage (message) {
-    this.emit('message', {
-      ...message,
-      from: new CID(1, 'libp2p-key', new CID(message.from).buffer)
-    })
+    this.emit('message', message)
   }
 
   async _handleDirectMessage (message) {
