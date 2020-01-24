@@ -4,10 +4,17 @@
   "description": "IPFS pub-sub room",
   "main": "src/index.js",
   "scripts": {
-    "lint": "aegir lint",
     "test": "aegir test",
     "test:node": "aegir test -t node",
-    "test:browser": "aegir test -t browser"
+    "test:browser": "aegir test -t browser",
+    "test:webworker": "aegir test -t webworker",
+    "build": "aegir build",
+    "lint": "aegir lint",
+    "release": "aegir release",
+    "release-minor": "aegir release --type minor",
+    "release-major": "aegir release --type major",
+    "coverage": "nyc --reporter=text --reporter=lcov --reporter=html npm run test:node",
+    "dep-check": "aegir dep-check"
   },
   "repository": {
     "type": "git",
