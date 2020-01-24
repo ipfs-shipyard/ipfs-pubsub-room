@@ -7,31 +7,23 @@ chai.use(require('dirty-chai'))
 const expect = chai.expect
 
 const PubSubRoom = require('../')
-const createRepo = require('./utils/create-repo')
-const createIpfs = require('./utils/create-ipfs')
+const createLibp2p = require('./utils/create-libp2p')
 
 const topicBase = 'pubsub-room-test-' + Date.now() + '-' + Math.random()
 
 describe('room', function () {
   this.timeout(30000)
-  const repos = []
   let node1, node2
   let id1, id2
 
   before(async () => {
-    const repo = createRepo()
-    repos.push(repo)
-
-    node1 = await createIpfs(repo)
-    id1 = (await node1.id()).id
+    node1 = await createLibp2p()
+    id1 = node1.peerInfo.id.toB58String()
   })
 
   before(async () => {
-    const repo = createRepo()
-    repos.push(repo)
-
-    node2 = await createIpfs(repo, node1)
-    id2 = (await node2.id()).id
+    node2 = await createLibp2p(node1)
+    id2 = node2.peerInfo.id.toB58String()
   })
 
   const rooms = []
@@ -121,11 +113,5 @@ describe('room', function () {
       node1.stop(),
       node2.stop()
     ])
-  })
-
-  after(() => {
-    return Promise.all(
-      repos.map(repo => repo.teardown())
-    )
   })
 })

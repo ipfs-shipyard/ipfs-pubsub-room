@@ -7,21 +7,17 @@ chai.use(require('dirty-chai'))
 const expect = chai.expect
 
 const PubSubRoom = require('../')
-const createRepo = require('./utils/create-repo')
-const createIpfs = require('./utils/create-ipfs')
+const createLibp2p = require('./utils/create-libp2p')
 
 const topic = 'pubsub-same-node-test-' + Date.now() + '-' + Math.random()
 
 describe('same node', function () {
   this.timeout(30000)
-  let repo
   let node
   const rooms = []
 
   before(async () => {
-    repo = createRepo()
-
-    node = await createIpfs(repo)
+    node = await createLibp2p()
   })
 
   before(() => {
@@ -37,8 +33,6 @@ describe('same node', function () {
   })
 
   after(() => node.stop())
-
-  after(() => repo.teardown())
 
   it('mirrors broadcast', (done) => {
     rooms[0].once('message', (message) => {

@@ -9,14 +9,12 @@ const expect = chai.expect
 const delay = require('delay')
 
 const PubSubRoom = require('../')
-const createRepo = require('./utils/create-repo')
-const createIpfs = require('./utils/create-ipfs')
+const createLibp2p = require('./utils/create-libp2p')
 
 const topic = 'pubsub-room-concurrency-test-' + Date.now() + '-' + Math.random()
 
 describe('concurrent rooms', function () {
   this.timeout(30000)
-  const repos = []
   let node1, node2
   let id1, id2
   let room1A, room1B, room2A, room2B
@@ -24,17 +22,13 @@ describe('concurrent rooms', function () {
   const topicB = topic + '-B'
 
   before(async () => {
-    const repo = createRepo()
-    repos.push(repo)
-    node1 = await createIpfs(repo)
-    id1 = (await node1.id()).id
+    node1 = await createLibp2p()
+    id1 = node1.peerInfo.id.toB58String()
   })
 
   before(async () => {
-    const repo = createRepo()
-    repos.push(repo)
-    node2 = await createIpfs(repo, node1)
-    id2 = (await node2.id()).id
+    node2 = await createLibp2p(node1)
+    id2 = node2.peerInfo.id.toB58String()
   })
 
   after(() => {
@@ -51,12 +45,6 @@ describe('concurrent rooms', function () {
       node1.stop(),
       node2.stop()
     ])
-  })
-
-  after(() => {
-    return Promise.all(
-      repos.map(repo => repo.teardown())
-    )
   })
 
   it('can create a room, and they find each other', async () => {

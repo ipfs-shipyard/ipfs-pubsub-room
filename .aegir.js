@@ -1,42 +1,37 @@
 'use strict'
 
-const { createFactory } = require('ipfsd-ctl')
-const df = createFactory({
-  ipfsModule: {
-    path: require.resolve('ipfs'),
-    ref: require('ipfs')
-  }
-})
+const Libp2p = require('libp2p')
+const PeerInfo = require('peer-info')
+const { config } = require('./test/utils/create-libp2p')
 
-let ipfsd
+let relay
 
 module.exports = {
   hooks: {
-    browser: {
-      pre: async () => {
-        ipfsd = await df.spawn({
-          type: 'proc',
-          test: true,
-          ipfsOptions: {
-            relay: {
-              enabled: true,
-              hop: {
-                enabled: true
-              }
-            },
-            config: {
-              Addresses: {
-                Swarm: [
-                  '/ip4/127.0.0.1/tcp/24642/ws'
-                ]
-              }
+    pre: async () => {
+      const peerInfo = await PeerInfo.create()
+      peerInfo.multiaddrs.add('/ip4/127.0.0.1/tcp/24642/ws')
+
+      const defaultConfig = await config()
+
+      relay = new Libp2p({
+        ...defaultConfig,
+        peerInfo,
+        config: {
+          ...defaultConfig.config,
+          relay: {
+            enabled: true,
+            hop: {
+              enabled: true
             }
           }
-        })
-      },
-      post: async () => {
-        await ipfsd.stop()
-      }
+        }
+      })
+
+      await relay.start()
+    },
+    post: async () => {
+      await relay.stop()
     }
   }
 }

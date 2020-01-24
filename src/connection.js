@@ -7,10 +7,10 @@ const PROTOCOL = require('./protocol')
 const encoding = require('./encoding')
 
 module.exports = class Connection extends EventEmitter {
-  constructor (id, ipfs, room) {
+  constructor (remoteId, libp2p, room) {
     super()
-    this._id = id
-    this._ipfs = ipfs
+    this._remoteId = remoteId
+    this._libp2p = libp2p
     this._room = room
     this._connection = null
     this._connecting = false
@@ -40,19 +40,19 @@ module.exports = class Connection extends EventEmitter {
 
   async _connect () {
     this._connecting = true
-    const peerAddresses = await this._getPeerAddresses(this._id)
 
-    if (!peerAddresses.length) {
+    if (!this._isConnectedToRemote()) {
       this.emit('disconnect')
+      this._connecting = false
       return // early
     }
 
-    const peerId = peerAddresses[0]
-    const peerInfo = this._ipfs.libp2p.peerStore.get(peerId)
-    const { stream } = await this._ipfs.libp2p.dialProtocol(peerInfo, PROTOCOL)
+    const peerInfo = this._libp2p.peerStore.get(this._remoteId)
+    const { stream } = await this._libp2p.dialProtocol(peerInfo, PROTOCOL)
     this._connection = new FiFoMessageQueue()
 
     pipe(this._connection, stream, async (source) => {
+      this._connecting = false
       this.emit('connect', this._connection)
 
       for await (const message of source) {
@@ -66,12 +66,12 @@ module.exports = class Connection extends EventEmitter {
       })
   }
 
-  async _getPeerAddresses (peerId) {
-    const peersAddresses = await this._ipfs.swarm.peers()
-
-    return peersAddresses
-      .filter((peerAddress) => peerAddress.peer === peerId)
-      .map(peerAddress => peerAddress.peer)
+  _isConnectedToRemote () {
+    for (const peerId of this._libp2p.connections.keys()) {
+      if (peerId === this._remoteId) {
+        return true
+      }
+    }
   }
 }
 

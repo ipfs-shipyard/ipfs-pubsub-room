@@ -36,13 +36,12 @@
     "chai": "^4.2.0",
     "delay": "^4.3.0",
     "dirty-chai": "^2.0.1",
-    "ipfs": "ipfs/js-ipfs#refactor/async-await-roundup",
-    "ipfs-repo": "^0.30.1",
-    "ipfsd-ctl": "^1.0.6",
+    "libp2p": "0.27.0-rc.0",
+    "libp2p-gossipsub": "0.2.1",
+    "libp2p-mplex": "^0.9.3",
+    "libp2p-secio": "^0.12.2",
+    "libp2p-websockets": "^0.13.2",
+    "peer-info": "^0.17.1",
     "rimraf": "^3.0.0"
-  },
-  "browser": {
-    "./test/utils/create-repo.js": "./test/utils/create-repo-browser.js",
-    "./test/utils/create-ipfs.js": "./test/utils/create-ipfs-browser.js"
   }
 }
