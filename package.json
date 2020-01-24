@@ -7,7 +7,7 @@
     "lint": "aegir lint",
     "test": "aegir test",
     "test:node": "aegir test -t node",
-    "test:browser": "aegir test - browser"
+    "test:browser": "aegir test -t browser"
   },
   "repository": {
     "type": "git",
@@ -28,18 +28,20 @@
   "homepage": "https://github.com/ipfs-shipyard/ipfs-pubsub-room#readme",
   "dependencies": {
     "hyperdiff": "^2.0.5",
-    "lodash.clonedeep": "^4.5.0",
-    "pull-pushable": "^2.2.0",
-    "pull-stream": "^3.6.9"
+    "it-pipe": "^1.1.0",
+    "lodash.clonedeep": "^4.5.0"
   },
   "devDependencies": {
-    "async": "^2.6.1",
+    "aegir": "^20.5.1",
     "chai": "^4.2.0",
+    "delay": "^4.3.0",
     "dirty-chai": "^2.0.1",
-    "aegir": "^18.0.3",
-    "ipfs": "~0.34.4"
-  },
-  "browser": {
-    "./test/utils/create-repo-node.js": "./test/utils/create-repo-browser.js"
+    "libp2p": "0.27.0-rc.0",
+    "libp2p-gossipsub": "0.2.1",
+    "libp2p-mplex": "^0.9.3",
+    "libp2p-secio": "^0.12.2",
+    "libp2p-websockets": "^0.13.2",
+    "peer-info": "^0.17.1",
+    "rimraf": "^3.0.0"
   }
 }

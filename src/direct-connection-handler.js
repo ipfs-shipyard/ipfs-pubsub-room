@@ -1,39 +1,35 @@
 'use strict'
 
-const pull = require('pull-stream')
 const EventEmitter = require('events')
+const pipe = require('it-pipe')
 
 const emitter = new EventEmitter()
 
-function handler (protocol, conn) {
-  conn.getPeerInfo((err, peerInfo) => {
-    if (err) {
-      console.log(err)
-      return
-    }
+function handler ({ connection, stream }) {
+  const peerId = connection.remotePeer.toB58String()
 
-    const peerId = peerInfo.id.toB58String()
-
-    pull(
-      conn,
-      pull.map((message) => {
+  pipe(
+    stream,
+    async function (source) {
+      for await (const message of source) {
         let msg
+
         try {
           msg = JSON.parse(message.toString())
         } catch (err) {
           emitter.emit('warning', err.message)
-          return // early
+          continue // early
         }
 
-        if (peerId !== msg.from) {
+        if (peerId !== msg.from.toString()) {
           emitter.emit('warning', 'no peerid match ' + msg.from)
-          return // early
+          continue // early
         }
 
         const topicIDs = msg.topicIDs
         if (!Array.isArray(topicIDs)) {
           emitter.emit('warning', 'no topic IDs')
-          return // early
+          continue // early
         }
 
         msg.data = Buffer.from(msg.data, 'hex')
@@ -42,14 +38,9 @@ function handler (protocol, conn) {
         topicIDs.forEach((topic) => {
           emitter.emit(topic, msg)
         })
-
-        return msg
-      }),
-      pull.onEnd(() => {
-        // do nothing
-      })
-    )
-  })
+      }
+    }
+  )
 }
 
 exports = module.exports = {
