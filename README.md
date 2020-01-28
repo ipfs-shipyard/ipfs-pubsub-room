@@ -36,7 +36,7 @@ const Room = require('ipfs-pubsub-room')
 const IPFS = require('ipfs')
 
 const ipfs = await IPFS.create({ ... })
-const room = Room(ipfs.libp2p, 'room-name')
+const room = Room(ipfs, 'room-name')
 ```
 
 Once we have a room we can listen for messages

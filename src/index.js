@@ -18,7 +18,7 @@ let index = 0
 class PubSubRoom extends EventEmitter {
   constructor (libp2p, topic, options) {
     super()
-    this._libp2p = libp2p
+    this._libp2p = libp2p.libp2p || libp2p
     this._topic = topic
     this._options = Object.assign({}, clone(DEFAULT_OPTIONS), clone(options))
     this._peers = []
