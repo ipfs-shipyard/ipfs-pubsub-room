@@ -1,3 +1,13 @@
+<a name="2.0.1"></a>
+## [2.0.1](https://github.com/ipfs-shipyard/ipfs-pubsub-room/compare/v2.0.0...v2.0.1) (2020-01-28)
+
+
+### Bug Fixes
+
+* support old constructor ([c742cd9](https://github.com/ipfs-shipyard/ipfs-pubsub-room/commit/c742cd9))
+
+
+
 <a name="2.0.0"></a>
 # [2.0.0](https://github.com/ipfs-shipyard/ipfs-pubsub-room/compare/v1.2.1...v2.0.0) (2020-01-24)
 
