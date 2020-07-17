@@ -18,12 +18,12 @@ describe('room', function () {
 
   before(async () => {
     node1 = await createLibp2p()
-    id1 = node1.peerInfo.id.toB58String()
+    id1 = node1.peerId.toB58String()
   })
 
   before(async () => {
     node2 = await createLibp2p(node1)
-    id2 = node2.peerInfo.id.toB58String()
+    id2 = node2.peerId.toB58String()
   })
 
   const rooms = []

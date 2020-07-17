@@ -1,17 +1,21 @@
 'use strict'
 
 const Libp2p = require('libp2p')
-const WS = require('libp2p-websockets')
+const TCP = require('libp2p-tcp')
 const Multiplex = require('libp2p-mplex')
+const NOISE = require('libp2p-noise')
 const SECIO = require('libp2p-secio')
 const GossipSub = require('libp2p-gossipsub')
-const PeerInfo = require('peer-info')
+const PeerId = require('peer-id')
 
-const RELAY_MULTIADDR = '/ip4/127.0.0.1/tcp/24642/ws'
+const RELAY_MULTIADDR = '/ip4/0.0.0.0/tcp/0'
 
 const config = async () => {
   return {
-    peerInfo: await PeerInfo.create(),
+    peerId: await PeerId.create(),
+    addresses: {
+      listen: [RELAY_MULTIADDR]
+    },
     dialer: {
       maxParallelDials: 150, // 150 total parallel multiaddr dials
       maxDialsPerPeer: 4, // Allow 4 multiaddrs to be dialed per peer in parallel
@@ -19,13 +23,13 @@ const config = async () => {
     },
     modules: {
       transport: [
-        WS
+        TCP
       ],
       streamMuxer: [
         Multiplex
       ],
       connEncryption: [
-        SECIO
+        NOISE, SECIO
       ],
       pubsub: GossipSub
     },
@@ -45,21 +49,21 @@ const config = async () => {
 }
 
 module.exports = async (otherNode) => {
-  const node = new Libp2p(await config())
+  const node = await Libp2p.create(await config())
 
   await node.start()
-
-  // connect to relay peer
-  await node.dial(RELAY_MULTIADDR)
+  console.log('libp2p has started')
 
   // both nodes created, get them to dial each other via the relay
   if (otherNode) {
-    const relayId = node.connections.keys().next().value
-    const otherNodeId = otherNode.peerInfo.id.toB58String()
-    const nodeId = node.peerInfo.id.toB58String()
+    const otherNodeId = otherNode.peerId
+    const nodeId = node.peerId
 
-    await node.dial(`${RELAY_MULTIADDR}/p2p/${relayId}/p2p-circuit/p2p/${otherNodeId}`)
-    await otherNode.dial(`${RELAY_MULTIADDR}/p2p/${relayId}/p2p-circuit/p2p/${nodeId}`)
+    node.peerStore.addressBook.set(otherNode.peerId, otherNode.multiaddrs)
+    otherNode.peerStore.addressBook.set(node.peerId, node.multiaddrs)
+    
+    await node.dial(otherNodeId)
+    await otherNode.dial(nodeId)
   }
 
   return node

@@ -1,7 +1,7 @@
 'use strict'
 
 const Libp2p = require('libp2p')
-const PeerInfo = require('peer-info')
+const PeerId = require('peer-id')
 const { config } = require('./test/utils/create-libp2p')
 
 let relay
@@ -9,14 +9,13 @@ let relay
 module.exports = {
   hooks: {
     pre: async () => {
-      const peerInfo = await PeerInfo.create()
-      peerInfo.multiaddrs.add('/ip4/127.0.0.1/tcp/24642/ws')
+      const peerId = await PeerId.create()
 
       const defaultConfig = await config()
 
       relay = new Libp2p({
         ...defaultConfig,
-        peerInfo,
+        peerId,
         config: {
           ...defaultConfig.config,
           relay: {

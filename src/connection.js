@@ -46,9 +46,9 @@ module.exports = class Connection extends EventEmitter {
       this._connecting = false
       return // early
     }
-
-    const peerInfo = this._libp2p.peerStore.get(this._remoteId)
-    const { stream } = await this._libp2p.dialProtocol(peerInfo, PROTOCOL)
+    
+    const peer = this._libp2p.peerStore.peers.get(this._remoteId)
+    const { stream } = await this._libp2p.dialProtocol(peer.id, PROTOCOL)
     this._connection = new FiFoMessageQueue()
 
     pipe(this._connection, stream, async (source) => {

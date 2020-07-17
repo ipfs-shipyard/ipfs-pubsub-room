@@ -36,6 +36,9 @@
   "dependencies": {
     "hyperdiff": "^2.0.5",
     "it-pipe": "^1.1.0",
+    "libp2p-noise": "^1.1.2",
+    "libp2p-tcp": "^0.14.5",
+    "libp2p-webrtc-star": "^0.18.6",
     "lodash.clonedeep": "^4.5.0"
   },
   "devDependencies": {
@@ -43,12 +46,12 @@
     "chai": "^4.2.0",
     "delay": "^4.3.0",
     "dirty-chai": "^2.0.1",
-    "libp2p": "0.27.0-rc.0",
-    "libp2p-gossipsub": "0.2.1",
-    "libp2p-mplex": "^0.9.3",
-    "libp2p-secio": "^0.12.2",
-    "libp2p-websockets": "^0.13.2",
-    "peer-info": "^0.17.1",
+    "libp2p": "^0.28.7",
+    "libp2p-gossipsub": "^0.4.0",
+    "libp2p-mplex": "^0.9.5",
+    "libp2p-secio": "^0.12.6",
+    "libp2p-websockets": "^0.13.3",
+    "peer-id": "^0.13.12",
     "rimraf": "^3.0.0"
   },
   "contributors": [
@@ -60,6 +63,7 @@
     "Pedro Teixeira <i@pgte.me>",
     "achingbrain <alex@achingbrain.net>",
     "haad <haad@headbanggames.com>",
-    "ᴠɪᴄᴛᴏʀ ʙᴊᴇʟᴋʜᴏʟᴍ <victorbjelkholm@gmail.com>"
+    "ᴠɪᴄᴛᴏʀ ʙᴊᴇʟᴋʜᴏʟᴍ <victorbjelkholm@gmail.com>",
+    "Josh Field <joshfield999@gmail.com>"
   ]
 }
