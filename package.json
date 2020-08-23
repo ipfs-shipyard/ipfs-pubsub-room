@@ -43,12 +43,13 @@
     "chai": "^4.2.0",
     "delay": "^4.3.0",
     "dirty-chai": "^2.0.1",
-    "libp2p": "0.27.0-rc.0",
-    "libp2p-gossipsub": "0.2.1",
+    "libp2p": "0.28.7",
+    "libp2p-gossipsub": "0.4.6",
     "libp2p-mplex": "^0.9.3",
     "libp2p-secio": "^0.12.2",
     "libp2p-websockets": "^0.13.2",
-    "peer-info": "^0.17.1",
+    "multiaddr": "^7.5.0",
+    "peer-id": "^0.13.13",
     "rimraf": "^3.0.0"
   },
   "contributors": [
