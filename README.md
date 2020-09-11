@@ -71,11 +71,11 @@ const room = Room(libp2p, 'some-room-name')
 
 ## room.broadcast(message)
 
-Broacasts message (string or buffer).
+Broacasts message (string).
 
 ## room.sendTo(cid, message)
 
-Sends message (string or buffer) to peer.
+Sends message (string) to peer.
 
 ## async room.leave()
 
@@ -94,7 +94,7 @@ Returns a boolean indicating if the given peer is present in the room.
 Listens for messages. A `message` is an object containing the following properties:
 
 * `from` (string): peer id
-* `data` (Buffer): message content
+* `data` (string): message content
 
 ## room.on('peer joined', (cid) => {})
 

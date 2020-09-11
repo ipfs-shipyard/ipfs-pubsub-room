@@ -2,6 +2,7 @@
 
 const EventEmitter = require('events')
 const pipe = require('it-pipe')
+const decoding = require('./decoding')
 
 const emitter = new EventEmitter()
 
@@ -15,7 +16,7 @@ function handler ({ connection, stream }) {
         let msg
 
         try {
-          msg = JSON.parse(message.toString())
+          msg = JSON.parse(message)
         } catch (err) {
           emitter.emit('warning', err.message)
           continue // early
@@ -32,8 +33,8 @@ function handler ({ connection, stream }) {
           continue // early
         }
 
-        msg.data = Buffer.from(msg.data, 'hex')
-        msg.seqno = Buffer.from(msg.seqno, 'hex')
+        msg.data = decoding(msg.data)
+        msg.seqno = decoding(msg.seqno)
 
         topicIDs.forEach((topic) => {
           emitter.emit(topic, msg)

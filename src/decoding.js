@@ -1,11 +1,11 @@
 'use strict'
 
-const uint8ArrayFromString = require('uint8arrays/from-string')
+const uint8ArrayToString = require('uint8arrays/to-string')
 
 module.exports = (_message) => {
   let message = _message
   if (message.constructor === Uint8Array) {
-    message = uint8ArrayFromString(message)
+    message = uint8ArrayToString(message)
   }
   return message
 }

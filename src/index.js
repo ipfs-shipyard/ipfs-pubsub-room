@@ -7,6 +7,7 @@ const clone = require('lodash.clonedeep')
 const PROTOCOL = require('./protocol')
 const Connection = require('./connection')
 const encoding = require('./encoding')
+const decoding = require('./decoding')
 const directConnection = require('./direct-connection-handler')
 
 const DEFAULT_OPTIONS = {
@@ -39,7 +40,8 @@ class PubSubRoom extends EventEmitter {
     this._libp2p.handle(PROTOCOL, directConnection.handler)
     directConnection.emitter.on(this._topic, this._handleDirectMessage)
 
-    this._libp2p.pubsub.subscribe(this._topic, this._handleMessage)
+    this._libp2p.pubsub.on(this._topic, this._handleMessage)
+    this._libp2p.pubsub.subscribe(this._topic)
 
     this._idx = index++
   }
@@ -59,7 +61,9 @@ class PubSubRoom extends EventEmitter {
     })
     directConnection.emitter.removeListener(this._topic, this._handleDirectMessage)
     this._libp2p.unhandle(PROTOCOL, directConnection.handler)
-    await this._libp2p.pubsub.unsubscribe(this._topic, this._handleMessage)
+
+    await this._libp2p.pubsub.removeListener(this._topic, this._handleMessage)
+    await this._libp2p.pubsub.unsubscribe(this._topic)
   }
 
   async broadcast (_message) {
@@ -83,23 +87,21 @@ class PubSubRoom extends EventEmitter {
     }
 
     // We should use the same sequence number generation as js-libp2p-floosub does:
-    // const seqno = Buffer.from(utils.randomSeqno())
+    // const seqno = encoding(utils.randomSeqno())
 
     // Until we figure out a good way to bring in the js-libp2p-floosub's randomSeqno
     // generator, let's use 0 as the sequence number for all private messages
-    // const seqno = Buffer.from([0])
-    const seqno = Buffer.from([0])
+    const seqno = 0
 
     const msg = {
       to: peer,
       from: this._libp2p.peerId.toB58String(),
-      data: Buffer.from(message).toString('hex'),
-      seqno: seqno.toString('hex'),
+      data: encoding(message),
+      seqno: seqno,
       topicIDs: [this._topic],
       topicCIDs: [this._topic]
     }
-
-    conn.push(Buffer.from(JSON.stringify(msg)))
+    conn.push(JSON.stringify(msg))
   }
 
   async _pollPeers () {
@@ -114,12 +116,16 @@ class PubSubRoom extends EventEmitter {
     const differences = diff(this._peers, newPeers)
 
     differences.added.forEach((peer) => this.emit('peer joined', peer))
-    differences.removed.forEach((peer) => this.emit('peer left', peer))
+    differences.removed.forEach((peer) => {
+      delete this._connections[peer]
+      this.emit('peer left', peer)
+    })
 
     return differences.added.length > 0 || differences.removed.length > 0
   }
 
   _onMessage (message) {
+    message.data = decoding(message.data)
     this.emit('message', message)
   }
 

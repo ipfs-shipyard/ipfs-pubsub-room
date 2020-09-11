@@ -89,7 +89,7 @@ describe('room', function () {
           }
           gotMessage = true
           expect(message.from).to.deep.equal(id1)
-          expect(message.seqno.toString()).to.equal(Buffer.from([0]).toString())
+          expect(message.seqno.toString()).to.equal('0')
           expect(message.topicIDs).to.deep.equal([topic])
           expect(message.topicCIDs).to.deep.equal([topic])
           expect(message.data.toString()).to.equal('message 2')
