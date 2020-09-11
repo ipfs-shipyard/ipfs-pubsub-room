@@ -34,7 +34,6 @@ function handler ({ connection, stream }) {
         }
 
         msg.data = decoding(msg.data)
-        msg.seqno = decoding(msg.seqno)
 
         topicIDs.forEach((topic) => {
           emitter.emit(topic, msg)
