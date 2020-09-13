@@ -33,8 +33,6 @@ function handler ({ connection, stream }) {
           continue // early
         }
 
-        msg.data = decoding(msg.data)
-
         topicIDs.forEach((topic) => {
           emitter.emit(topic, msg)
         })

@@ -5,7 +5,6 @@ const pipe = require('it-pipe')
 const PeerId = require('peer-id')
 
 const PROTOCOL = require('./protocol')
-const encoding = require('./encoding')
 
 module.exports = class Connection extends EventEmitter {
   constructor (remoteId, libp2p, room) {
@@ -19,7 +18,7 @@ module.exports = class Connection extends EventEmitter {
 
   push (message) {
     if (this._connection) {
-      this._connection.push(encoding(message))
+      this._connection.push(message)
 
       return
     }

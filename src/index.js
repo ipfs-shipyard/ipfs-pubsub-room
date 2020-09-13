@@ -96,12 +96,12 @@ class PubSubRoom extends EventEmitter {
     const msg = {
       to: peer,
       from: this._libp2p.peerId.toB58String(),
-      data: encoding(message),
+      data: message,
       seqno: seqno,
       topicIDs: [this._topic],
       topicCIDs: [this._topic]
     }
-    conn.push(JSON.stringify(msg))
+    conn.push(encoding(JSON.stringify(msg)))
   }
 
   async _pollPeers () {
