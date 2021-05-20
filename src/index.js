@@ -3,11 +3,18 @@
 const diff = require('hyperdiff')
 const EventEmitter = require('events')
 const clone = require('lodash.clonedeep')
+const uint8ArrayToString = require('uint8arrays/to-string')
 
 const PROTOCOL = require('./protocol')
 const Connection = require('./connection')
 const encoding = require('./encoding')
 const directConnection = require('./direct-connection-handler')
+
+const uint8ArrayToHexString = (uint8Array) => {
+  const arr = Array.from(uint8Array)
+  const hex = arr.map((b) => b.toString(16).padStart(2, '0')).join('')
+  return hex
+}
 
 const DEFAULT_OPTIONS = {
   pollInterval: 1000
@@ -39,7 +46,8 @@ class PubSubRoom extends EventEmitter {
     this._libp2p.handle(PROTOCOL, directConnection.handler)
     directConnection.emitter.on(this._topic, this._handleDirectMessage)
 
-    this._libp2p.pubsub.subscribe(this._topic, this._handleMessage)
+    this._libp2p.pubsub.on(this._topic, this._handleMessage)
+    this._libp2p.pubsub.subscribe(this._topic)
 
     this._idx = index++
   }
@@ -59,7 +67,8 @@ class PubSubRoom extends EventEmitter {
     })
     directConnection.emitter.removeListener(this._topic, this._handleDirectMessage)
     this._libp2p.unhandle(PROTOCOL, directConnection.handler)
-    await this._libp2p.pubsub.unsubscribe(this._topic, this._handleMessage)
+    await this._libp2p.pubsub.removeListener(this._topic, this._handleMessage)
+    await this._libp2p.pubsub.unsubscribe(this._topic)
   }
 
   async broadcast (_message) {
@@ -68,7 +77,8 @@ class PubSubRoom extends EventEmitter {
     await this._libp2p.pubsub.publish(this._topic, message)
   }
 
-  sendTo (peer, message) {
+  sendTo (peer, _message) {
+    const message = encoding(_message)
     let conn = this._connections[peer]
     if (!conn) {
       conn = new Connection(peer, this._libp2p, this)
@@ -88,18 +98,18 @@ class PubSubRoom extends EventEmitter {
     // Until we figure out a good way to bring in the js-libp2p-floosub's randomSeqno
     // generator, let's use 0 as the sequence number for all private messages
     // const seqno = Buffer.from([0])
-    const seqno = Buffer.from([0])
+    const seqno = new Uint8Array(1)
 
     const msg = {
       to: peer,
-      from: this._libp2p.peerInfo.id.toB58String(),
-      data: Buffer.from(message).toString('hex'),
-      seqno: seqno.toString('hex'),
+      from: this._libp2p.peerId.toB58String(),
+      data: uint8ArrayToHexString(message),
+      seqno: uint8ArrayToHexString(seqno),
       topicIDs: [this._topic],
       topicCIDs: [this._topic]
     }
 
-    conn.push(Buffer.from(JSON.stringify(msg)))
+    conn.push(encoding(JSON.stringify(msg)))
   }
 
   async _pollPeers () {
@@ -114,17 +124,21 @@ class PubSubRoom extends EventEmitter {
     const differences = diff(this._peers, newPeers)
 
     differences.added.forEach((peer) => this.emit('peer joined', peer))
-    differences.removed.forEach((peer) => this.emit('peer left', peer))
+    differences.removed.forEach((peer) => {
+      delete this._connections[peer]
+      this.emit('peer left', peer)
+    })
 
     return differences.added.length > 0 || differences.removed.length > 0
   }
 
   _onMessage (message) {
+    message.data.toString = function () { return uint8ArrayToString(this) }
     this.emit('message', message)
   }
 
   _handleDirectMessage (message) {
-    if (message.to.toString() === this._libp2p.peerInfo.id.toB58String()) {
+    if (message.to.toString() === this._libp2p.peerId.toB58String()) {
       const m = Object.assign({}, message)
       delete m.to
       this.emit('message', m)

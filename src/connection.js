@@ -2,6 +2,7 @@
 
 const EventEmitter = require('events')
 const pipe = require('it-pipe')
+const PeerId = require('peer-id')
 
 const PROTOCOL = require('./protocol')
 const encoding = require('./encoding')
@@ -47,8 +48,8 @@ module.exports = class Connection extends EventEmitter {
       return // early
     }
 
-    const peerInfo = this._libp2p.peerStore.get(this._remoteId)
-    const { stream } = await this._libp2p.dialProtocol(peerInfo, PROTOCOL)
+    const remotePeerId = await PeerId.createFromB58String(this._remoteId)
+    const { stream } = await this._libp2p.dialProtocol(remotePeerId, PROTOCOL)
     this._connection = new FiFoMessageQueue()
 
     pipe(this._connection, stream, async (source) => {
