@@ -5,7 +5,7 @@
 const chai = require('chai')
 chai.use(require('dirty-chai'))
 const expect = chai.expect
-
+const { toString: uint8ArrayToString } = require('uint8arrays/to-string')
 const delay = require('delay')
 
 const PubSubRoom = require('../')
@@ -107,10 +107,10 @@ describe('concurrent rooms', function () {
     room2B.on('message', crash)
     room2A.once('message', (message) => {
       expect(message.from.toString()).to.equal(id1.toString())
-      expect(message.seqno.toString()).to.equal(Buffer.from([0]).toString())
+      expect(message.seqno.toString()).to.equal(Uint8Array.from([0]).toString())
       expect(message.topicIDs).to.deep.equal([topicA])
       expect(message.topicCIDs).to.deep.equal([topicA])
-      expect(message.data.toString()).to.equal('message 2')
+      expect(uint8ArrayToString(message.data)).to.equal('message 2')
       room2B.removeListener('message', crash)
       done()
     })
