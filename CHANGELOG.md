@@ -1,3 +1,13 @@
+<a name="2.0.2"></a>
+## [2.0.2](https://github.com/ipfs-shipyard/ipfs-pubsub-room/compare/v2.0.1...v2.0.2) (2022-06-23)
+
+
+### Bug Fixes
+
+* remove buffers for better browser compat ([#83](https://github.com/ipfs-shipyard/ipfs-pubsub-room/issues/83)) ([5a85d0a](https://github.com/ipfs-shipyard/ipfs-pubsub-room/commit/5a85d0a))
+
+
+
 <a name="2.0.1"></a>
 ## [2.0.1](https://github.com/ipfs-shipyard/ipfs-pubsub-room/compare/v2.0.0...v2.0.1) (2020-01-28)
 
