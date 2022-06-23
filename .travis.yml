@@ -10,21 +10,20 @@ stages:
   - cov
 
 node_js:
-  - '12'
+  - '16'
 
 os:
   - linux
   - osx
   - windows
 
-script: npx nyc -s npm run test:node -- --bail
-after_success: npx nyc report --reporter=text-lcov > coverage.lcov && npx codecov
+script: npm run test:node -- --bail
+after_success: npx codecov
 
 jobs:
   include:
     - stage: check
       script:
-        - npx aegir commitlint --travis
         - npx aegir dep-check
         - npm run lint
 

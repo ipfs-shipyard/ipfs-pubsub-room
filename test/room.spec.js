@@ -1,13 +1,10 @@
 /* eslint-env mocha */
 /* eslint max-nested-callbacks: ["error", 5] */
-'use strict'
 
-const chai = require('chai')
-chai.use(require('dirty-chai'))
-const expect = chai.expect
-const { toString: uint8ArrayToString } = require('uint8arrays/to-string')
-const PubSubRoom = require('../')
-const createLibp2p = require('./utils/create-libp2p')
+import { expect } from 'aegir/chai'
+import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
+import PubSubRoom from '../src/index.js'
+import createLibp2p from './utils/create-libp2p.js'
 
 const topicBase = 'pubsub-room-test-' + Date.now() + '-' + Math.random()
 
@@ -18,12 +15,12 @@ describe('room', function () {
 
   before(async () => {
     node1 = await createLibp2p()
-    id1 = node1.peerInfo.id.toB58String()
+    id1 = node1.peerId
   })
 
   before(async () => {
     node2 = await createLibp2p(node1)
-    id2 = node2.peerInfo.id.toB58String()
+    id2 = node2.peerId
   })
 
   const rooms = []
@@ -47,13 +44,13 @@ describe('room', function () {
 
         let left = 2
         rooms[n].a.once('peer joined', (id) => {
-          expect(id).to.deep.equal(id2)
+          expect(id.toString()).to.deep.equal(id2.toString())
           if (--left === 0) {
             done()
           }
         })
         rooms[n].b.once('peer joined', (id) => {
-          expect(id).to.deep.equal(id1)
+          expect(id.toString()).to.deep.equal(id1.toString())
           if (--left === 0) {
             done()
           }
@@ -61,8 +58,8 @@ describe('room', function () {
       })
 
       it('has peer', (done) => {
-        expect(rooms[n].a.getPeers()).to.deep.equal([id2])
-        expect(rooms[n].b.getPeers()).to.deep.equal([id1])
+        expect(rooms[n].a.getPeers().map(p => p.toString())).to.deep.equal([id2.toString()])
+        expect(rooms[n].b.getPeers().map(p => p.toString())).to.deep.equal([id1.toString()])
         done()
       })
 
@@ -70,11 +67,11 @@ describe('room', function () {
         let gotMessage = false
         rooms[n].a.on('message', (message) => {
           if (gotMessage) {
-            throw new Error('double message:' + message.data.toString())
+            throw new Error('double message:' + uint8ArrayToString(message.data))
           }
           gotMessage = true
-          expect(message.from).to.deep.equal(id2)
-          expect(message.data.toString()).to.equal('message 1')
+          expect(message.from.toString()).to.equal(id2.toString())
+          expect(uint8ArrayToString(message.data)).to.equal('message 1')
           done()
         })
         rooms[n].b.broadcast('message 1')
@@ -88,10 +85,9 @@ describe('room', function () {
             throw new Error('double message')
           }
           gotMessage = true
-          expect(message.from).to.deep.equal(id1)
-          expect(message.seqno.toString()).to.equal(Uint8Array.from([0]).toString())
-          expect(message.topicIDs).to.deep.equal([topic])
-          expect(message.topicCIDs).to.deep.equal([topic])
+          expect(message.from.toString()).to.equal(id1.toString())
+          expect(message.seqno).to.equal(0n)
+          expect(message.topic).to.equal(topic)
           expect(uint8ArrayToString(message.data)).to.equal('message 2')
           done()
         })
@@ -100,7 +96,7 @@ describe('room', function () {
 
       it('can leave room', (done) => {
         rooms[n].a.once('peer left', (peer) => {
-          expect(peer).to.deep.equal(id2)
+          expect(peer.toString()).to.deep.equal(id2.toString())
           done()
         })
         rooms[n].b.leave()

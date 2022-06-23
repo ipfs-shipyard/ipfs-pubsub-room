@@ -1,3 +1,2 @@
-'use strict'
 
-module.exports = 'ipfs-pubsub-room/v2'
+export default 'ipfs-pubsub-room/v2'

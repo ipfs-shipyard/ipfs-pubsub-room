@@ -1,15 +1,11 @@
-'use strict'
-
-const diff = require('hyperdiff')
-const EventEmitter = require('events')
-const clone = require('lodash.clonedeep')
-
-const PROTOCOL = require('./protocol')
-const Connection = require('./connection')
-const encoding = require('./encoding')
-const directConnection = require('./direct-connection-handler')
-const { fromString: uint8ArrayFromString } = require('uint8arrays/from-string')
-const { toString: uint8ArrayToString } = require('uint8arrays/to-string')
+import diff from 'hyperdiff'
+import EventEmitter from 'events'
+import clone from 'lodash.clonedeep'
+import Connection from './connection.js'
+import encoding from './encoding.js'
+import * as directConnection from './direct-connection-handler.js'
+import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 
 const DEFAULT_OPTIONS = {
   pollInterval: 1000
@@ -17,7 +13,7 @@ const DEFAULT_OPTIONS = {
 
 let index = 0
 
-class PubSubRoom extends EventEmitter {
+export default class PubSubRoom extends EventEmitter {
   constructor (libp2p, topic, options) {
     super()
     this._libp2p = libp2p.libp2p || libp2p
@@ -38,10 +34,11 @@ class PubSubRoom extends EventEmitter {
       this._options.pollInterval
     )
 
-    this._libp2p.handle(PROTOCOL, directConnection.handler)
+    directConnection.handle(libp2p)
     directConnection.emitter.on(this._topic, this._handleDirectMessage)
 
-    this._libp2p.pubsub.subscribe(this._topic, this._handleMessage)
+    this._libp2p.pubsub.subscribe(this._topic)
+    this._libp2p.pubsub.addEventListener('message', this._handleMessage)
 
     this._idx = index++
   }
@@ -60,13 +57,13 @@ class PubSubRoom extends EventEmitter {
       this._connections[peer].stop()
     })
     directConnection.emitter.removeListener(this._topic, this._handleDirectMessage)
-    this._libp2p.unhandle(PROTOCOL, directConnection.handler)
-    await this._libp2p.pubsub.unsubscribe(this._topic, this._handleMessage)
+    // directConnection.unhandle(this._libp2p)
+    await this._libp2p.pubsub.unsubscribe(this._topic)
+    this._libp2p.pubsub.removeEventListener('message', this._handleMessage)
   }
 
   async broadcast (_message) {
     const message = encoding(_message)
-
     await this._libp2p.pubsub.publish(this._topic, message)
   }
 
@@ -89,16 +86,14 @@ class PubSubRoom extends EventEmitter {
 
     // Until we figure out a good way to bring in the js-libp2p-floosub's randomSeqno
     // generator, let's use 0 as the sequence number for all private messages
-    // const seqno = Uint8Array.from([0])
-    const seqno = Uint8Array.from([0])
+    const seqno = 0n
 
     const msg = {
       to: peer,
-      from: this._libp2p.peerInfo.id.toB58String(),
+      from: this._libp2p.peerId.toString(),
       data: uint8ArrayToString(uint8ArrayFromString(message), 'hex'),
-      seqno: seqno.toString('hex'),
-      topicIDs: [this._topic],
-      topicCIDs: [this._topic]
+      seqno: seqno.toString(),
+      topic: this._topic
     }
 
     conn.push(uint8ArrayFromString(JSON.stringify(msg)))
@@ -113,7 +108,7 @@ class PubSubRoom extends EventEmitter {
   }
 
   _emitChanges (newPeers) {
-    const differences = diff(this._peers, newPeers)
+    const differences = diff(this._peers.map(p => p.toString()), newPeers.map(p => p.toString()))
 
     differences.added.forEach((peer) => this.emit('peer joined', peer))
     differences.removed.forEach((peer) => this.emit('peer left', peer))
@@ -121,17 +116,23 @@ class PubSubRoom extends EventEmitter {
     return differences.added.length > 0 || differences.removed.length > 0
   }
 
-  _onMessage (message) {
-    this.emit('message', message)
+  _onMessage (event) {
+    const message = event.detail
+
+    if (message.topic === this._topic) {
+      this.emit('message', message)
+    }
   }
 
   _handleDirectMessage (message) {
-    if (message.to.toString() === this._libp2p.peerInfo.id.toB58String()) {
+    if (message.to.toString() !== this._libp2p.peerId.toString()) {
+      return
+    }
+
+    if (message.topic === this._topic) {
       const m = Object.assign({}, message)
       delete m.to
       this.emit('message', m)
     }
   }
 }
-
-module.exports = PubSubRoom

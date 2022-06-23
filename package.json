@@ -3,9 +3,10 @@
   "version": "2.0.2",
   "description": "IPFS pub-sub room",
   "main": "src/index.js",
+  "type": "module",
   "scripts": {
     "test": "aegir test",
-    "test:node": "aegir test -t node",
+    "test:node": "aegir test -t node --cov",
     "test:browser": "aegir test -t browser",
     "test:webworker": "aegir test -t webworker",
     "build": "aegir build",
@@ -13,7 +14,6 @@
     "release": "aegir release",
     "release-minor": "aegir release --type minor",
     "release-major": "aegir release --type major",
-    "coverage": "nyc --reporter=text --reporter=lcov --reporter=html npm run test:node",
     "dep-check": "aegir dep-check"
   },
   "repository": {
@@ -35,22 +35,19 @@
   "homepage": "https://github.com/ipfs-shipyard/ipfs-pubsub-room#readme",
   "dependencies": {
     "hyperdiff": "^2.0.5",
-    "it-pipe": "^1.1.0",
+    "it-pipe": "^2.0.3",
     "lodash.clonedeep": "^4.5.0",
     "uint8arrays": "^3.0.0"
   },
   "devDependencies": {
-    "aegir": "^20.5.1",
-    "chai": "^4.2.0",
-    "delay": "^4.3.0",
-    "dirty-chai": "^2.0.1",
-    "libp2p": "0.27.0-rc.0",
-    "libp2p-gossipsub": "0.2.1",
-    "libp2p-mplex": "^0.9.3",
-    "libp2p-secio": "^0.12.2",
-    "libp2p-websockets": "^0.13.2",
-    "peer-info": "^0.17.1",
-    "rimraf": "^3.0.0"
+    "@chainsafe/libp2p-gossipsub": "^2.0.0",
+    "@libp2p/floodsub": "^1.0.6",
+    "@libp2p/mplex": "^1.1.0",
+    "@libp2p/websockets": "^1.0.7",
+    "@multiformats/multiaddr": "^10.2.0",
+    "aegir": "^37.3.0",
+    "delay": "^5.0.0",
+    "libp2p": "^0.37.3"
   },
   "contributors": [
     "Alex Potsides <alex@achingbrain.net>",
@@ -62,5 +59,11 @@
     "Pedro Teixeira <i@pgte.me>",
     "haad <haad@headbanggames.com>",
     "ᴠɪᴄᴛᴏʀ ʙᴊᴇʟᴋʜᴏʟᴍ <victorbjelkholm@gmail.com>"
-  ]
+  ],
+  "eslintConfig": {
+    "extends": "ipfs",
+    "parserOptions": {
+      "sourceType": "module"
+    }
+  }
 }

@@ -1,37 +1,39 @@
-'use strict'
+import { createLibp2p } from 'libp2p'
+import { config } from './test/utils/create-libp2p.js'
 
-const Libp2p = require('libp2p')
-const PeerInfo = require('peer-info')
-const { config } = require('./test/utils/create-libp2p')
-
-let relay
-
-module.exports = {
-  hooks: {
-    pre: async () => {
-      const peerInfo = await PeerInfo.create()
-      peerInfo.multiaddrs.add('/ip4/127.0.0.1/tcp/24642/ws')
-
-      const defaultConfig = await config()
-
-      relay = new Libp2p({
+export default {
+  test: {
+    async before () {
+      const defaultConfig = config()
+      const relay = await createLibp2p({
         ...defaultConfig,
-        peerInfo,
-        config: {
-          ...defaultConfig.config,
-          relay: {
+        relay: {
+          enabled: true,
+          hop: {
             enabled: true,
-            hop: {
-              enabled: true
-            }
+            active: true
           }
+        },
+        addresses: {
+          listen: [
+            '/ip4/127.0.0.1/tcp/24642/ws'
+          ]
         }
       })
 
       await relay.start()
+
+      const addrs = relay.getMultiaddrs()
+
+      return {
+        relay,
+        env: {
+          RELAY_ADDRESS: addrs[0]
+        }
+      }
     },
-    post: async () => {
-      await relay.stop()
+    async after (_, before) {
+      await before.relay.stop()
     }
   }
 }

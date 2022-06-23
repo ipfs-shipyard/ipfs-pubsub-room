@@ -1,11 +1,9 @@
-'use strict'
+import { fromString as uint8arrayFromString } from 'uint8arrays/from-string'
 
-const { fromString: uint8arrayFromString } = require('uint8arrays/from-string')
-
-module.exports = (_message) => {
-  let message = _message
+export default (message) => {
   if (!(message instanceof Uint8Array)) {
-    message = uint8arrayFromString(message)
+    return uint8arrayFromString(message)
   }
+
   return message
 }

@@ -1,13 +1,26 @@
-'use strict'
+import EventEmitter from 'events'
+import { pipe } from 'it-pipe'
+import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
+import PROTOCOL from './protocol.js'
 
-const EventEmitter = require('events')
-const pipe = require('it-pipe')
-const { fromString: uint8ArrayFromString } = require('uint8arrays/from-string')
+export const emitter = new EventEmitter()
 
-const emitter = new EventEmitter()
+export function handle (libp2p) {
+  // can only register one handler for the protocol
+  libp2p.handle(PROTOCOL, handler).catch(err => {
+    if (err.code !== 'ERR_PROTOCOL_HANDLER_ALREADY_REGISTERED') {
+      console.error(err) // eslint-disable-line no-console
+    }
+  })
+}
+
+export function unhandle (libp2p) {
+  libp2p.unhandle(PROTOCOL, handler)
+}
 
 function handler ({ connection, stream }) {
-  const peerId = connection.remotePeer.toB58String()
+  const peerId = connection.remotePeer.toString()
 
   pipe(
     stream,
@@ -16,7 +29,7 @@ function handler ({ connection, stream }) {
         let msg
 
         try {
-          msg = JSON.parse(message.toString())
+          msg = JSON.parse(uint8ArrayToString(message))
         } catch (err) {
           emitter.emit('warning', err.message)
           continue // early
@@ -27,24 +40,11 @@ function handler ({ connection, stream }) {
           continue // early
         }
 
-        const topicIDs = msg.topicIDs
-        if (!Array.isArray(topicIDs)) {
-          emitter.emit('warning', 'no topic IDs')
-          continue // early
-        }
-
         msg.data = uint8ArrayFromString(msg.data, 'hex')
-        msg.seqno = uint8ArrayFromString(msg.seqno.padStart(msg.seqno.length % 2 === 0 ? msg.seqno.length : msg.seqno.length + 1, '0'), 'hex')
+        msg.seqno = BigInt(msg.seqno)
 
-        topicIDs.forEach((topic) => {
-          emitter.emit(topic, msg)
-        })
+        emitter.emit(msg.topic, msg)
       }
     }
   )
-}
-
-exports = module.exports = {
-  handler: handler,
-  emitter: emitter
 }
