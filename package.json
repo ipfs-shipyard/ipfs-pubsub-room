@@ -14,7 +14,6 @@
     "release": "aegir release",
     "release-minor": "aegir release --type minor",
     "release-major": "aegir release --type major",
-    "coverage": "nyc --reporter=text --reporter=lcov --reporter=html npm run test:node",
     "dep-check": "aegir dep-check"
   },
   "repository": {
