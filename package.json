@@ -1,6 +1,6 @@
 {
   "name": "ipfs-pubsub-room",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "IPFS pub-sub room",
   "main": "src/index.js",
   "scripts": {
@@ -53,13 +53,13 @@
     "rimraf": "^3.0.0"
   },
   "contributors": [
+    "Alex Potsides <alex@achingbrain.net>",
     "CHEVALAY JOSSELIN <josselin54.chevalay@gmail.com>",
     "David Dias <daviddias.p@gmail.com>",
     "Eric Olszewski <eolszewski@gmail.com>",
     "Gorka <gorka@aquigorka.com>",
     "Henrique Dias <hacdias@gmail.com>",
     "Pedro Teixeira <i@pgte.me>",
-    "achingbrain <alex@achingbrain.net>",
     "haad <haad@headbanggames.com>",
     "ᴠɪᴄᴛᴏʀ ʙᴊᴇʟᴋʜᴏʟᴍ <victorbjelkholm@gmail.com>"
   ]
