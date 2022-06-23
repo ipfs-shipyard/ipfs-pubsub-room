@@ -17,8 +17,8 @@ os:
   - osx
   - windows
 
-script: npx nyc -s npm run test:node -- --bail
-after_success: npx nyc report --reporter=text-lcov > coverage.lcov && npx codecov
+script: npm run test:node -- --bail
+after_success: npx codecov
 
 jobs:
   include:
