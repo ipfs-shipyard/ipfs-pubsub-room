@@ -34,7 +34,7 @@ function handler ({ connection, stream }) {
         }
 
         msg.data = uint8ArrayFromString(msg.data, 'hex')
-        msg.seqno = uint8ArrayFromString(msg.seqno.padStart(msg.seqno.length % 2 == 0 ? msg.seqno.length : msg.seqno.length + 1, '0'), 'hex')
+        msg.seqno = uint8ArrayFromString(msg.seqno.padStart(msg.seqno.length % 2 === 0 ? msg.seqno.length : msg.seqno.length + 1, '0'), 'hex')
 
         topicIDs.forEach((topic) => {
           emitter.emit(topic, msg)
