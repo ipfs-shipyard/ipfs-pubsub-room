@@ -8,6 +8,8 @@ const PROTOCOL = require('./protocol')
 const Connection = require('./connection')
 const encoding = require('./encoding')
 const directConnection = require('./direct-connection-handler')
+const { fromString: uint8ArrayFromString } = require('uint8arrays/from-string')
+const { toString: uint8ArrayToString } = require('uint8arrays/to-string')
 
 const DEFAULT_OPTIONS = {
   pollInterval: 1000
@@ -83,23 +85,23 @@ class PubSubRoom extends EventEmitter {
     }
 
     // We should use the same sequence number generation as js-libp2p-floosub does:
-    // const seqno = Buffer.from(utils.randomSeqno())
+    // const seqno = Uint8Array.from(utils.randomSeqno())
 
     // Until we figure out a good way to bring in the js-libp2p-floosub's randomSeqno
     // generator, let's use 0 as the sequence number for all private messages
-    // const seqno = Buffer.from([0])
-    const seqno = Buffer.from([0])
+    // const seqno = Uint8Array.from([0])
+    const seqno = Uint8Array.from([0])
 
     const msg = {
       to: peer,
       from: this._libp2p.peerInfo.id.toB58String(),
-      data: Buffer.from(message).toString('hex'),
+      data: uint8ArrayToString(uint8ArrayFromString(message), 'hex'),
       seqno: seqno.toString('hex'),
       topicIDs: [this._topic],
       topicCIDs: [this._topic]
     }
 
-    conn.push(Buffer.from(JSON.stringify(msg)))
+    conn.push(uint8ArrayFromString(JSON.stringify(msg)))
   }
 
   async _pollPeers () {

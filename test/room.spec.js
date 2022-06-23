@@ -5,7 +5,7 @@
 const chai = require('chai')
 chai.use(require('dirty-chai'))
 const expect = chai.expect
-
+const { toString: uint8ArrayToString } = require('uint8arrays/to-string')
 const PubSubRoom = require('../')
 const createLibp2p = require('./utils/create-libp2p')
 
@@ -89,10 +89,10 @@ describe('room', function () {
           }
           gotMessage = true
           expect(message.from).to.deep.equal(id1)
-          expect(message.seqno.toString()).to.equal(Buffer.from([0]).toString())
+          expect(message.seqno.toString()).to.equal(Uint8Array.from([0]).toString())
           expect(message.topicIDs).to.deep.equal([topic])
           expect(message.topicCIDs).to.deep.equal([topic])
-          expect(message.data.toString()).to.equal('message 2')
+          expect(uint8ArrayToString(message.data)).to.equal('message 2')
           done()
         })
         rooms[n].a.sendTo(id2, 'message 2')

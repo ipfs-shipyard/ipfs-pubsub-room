@@ -2,6 +2,7 @@
 
 const EventEmitter = require('events')
 const pipe = require('it-pipe')
+const { fromString: uint8ArrayFromString } = require('uint8arrays/from-string')
 
 const emitter = new EventEmitter()
 
@@ -32,8 +33,8 @@ function handler ({ connection, stream }) {
           continue // early
         }
 
-        msg.data = Buffer.from(msg.data, 'hex')
-        msg.seqno = Buffer.from(msg.seqno, 'hex')
+        msg.data = uint8ArrayFromString(msg.data, 'hex')
+        msg.seqno = uint8ArrayFromString(msg.seqno.padStart(msg.seqno.length % 2 === 0 ? msg.seqno.length : msg.seqno.length + 1, '0'), 'hex')
 
         topicIDs.forEach((topic) => {
           emitter.emit(topic, msg)

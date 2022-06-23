@@ -36,7 +36,8 @@
   "dependencies": {
     "hyperdiff": "^2.0.5",
     "it-pipe": "^1.1.0",
-    "lodash.clonedeep": "^4.5.0"
+    "lodash.clonedeep": "^4.5.0",
+    "uint8arrays": "^3.0.0"
   },
   "devDependencies": {
     "aegir": "^20.5.1",
