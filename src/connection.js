@@ -1,12 +1,9 @@
-'use strict'
+import EventEmitter from 'events'
+import { pipe } from 'it-pipe'
+import PROTOCOL from './protocol.js'
+import encoding from './encoding.js'
 
-const EventEmitter = require('events')
-const pipe = require('it-pipe')
-
-const PROTOCOL = require('./protocol')
-const encoding = require('./encoding')
-
-module.exports = class Connection extends EventEmitter {
+export default class Connection extends EventEmitter {
   constructor (remoteId, libp2p, room) {
     super()
     this._remoteId = remoteId
@@ -47,8 +44,8 @@ module.exports = class Connection extends EventEmitter {
       return // early
     }
 
-    const peerInfo = this._libp2p.peerStore.get(this._remoteId)
-    const { stream } = await this._libp2p.dialProtocol(peerInfo, PROTOCOL)
+    const peer = await this._libp2p.peerStore.get(this._remoteId)
+    const { stream } = await this._libp2p.dialProtocol(peer.id, PROTOCOL)
     this._connection = new FiFoMessageQueue()
 
     pipe(this._connection, stream, async (source) => {
@@ -58,20 +55,16 @@ module.exports = class Connection extends EventEmitter {
       for await (const message of source) {
         this.emit('message', message)
       }
+
+      this.emit('disconnect')
     })
-      .then(() => {
-        this.emit('disconnect')
-      }, (err) => {
+      .catch((err) => {
         this.emit('error', err)
       })
   }
 
   _isConnectedToRemote () {
-    for (const peerId of this._libp2p.connections.keys()) {
-      if (peerId === this._remoteId) {
-        return true
-      }
-    }
+    return this._libp2p.getConnections(this._remoteId).length !== 0
   }
 }
 

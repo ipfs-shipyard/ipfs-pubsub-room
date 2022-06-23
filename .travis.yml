@@ -10,7 +10,7 @@ stages:
   - cov
 
 node_js:
-  - '12'
+  - '16'
 
 os:
   - linux

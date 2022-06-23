@@ -1,15 +1,11 @@
 /* eslint-env mocha */
 /* eslint max-nested-callbacks: ["error", 5] */
-'use strict'
 
-const chai = require('chai')
-chai.use(require('dirty-chai'))
-const expect = chai.expect
-const { toString: uint8ArrayToString } = require('uint8arrays/to-string')
-const delay = require('delay')
-
-const PubSubRoom = require('../')
-const createLibp2p = require('./utils/create-libp2p')
+import { expect } from 'aegir/chai'
+import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
+import delay from 'delay'
+import PubSubRoom from '../src/index.js'
+import createLibp2p from './utils/create-libp2p.js'
 
 const topic = 'pubsub-room-concurrency-test-' + Date.now() + '-' + Math.random()
 
@@ -23,27 +19,25 @@ describe('concurrent rooms', function () {
 
   before(async () => {
     node1 = await createLibp2p()
-    id1 = node1.peerInfo.id.toB58String()
-  })
+    id1 = node1.peerId
 
-  before(async () => {
     node2 = await createLibp2p(node1)
-    id2 = node2.peerInfo.id.toB58String()
+    id2 = node2.peerId
   })
 
   after(() => {
     return Promise.all([
-      room1A.leave(),
-      room1B.leave(),
-      room2A.leave(),
-      room2B.leave()
+      room1A && room1A.leave(),
+      room1B && room1B.leave(),
+      room2A && room2A.leave(),
+      room2B && room2B.leave()
     ])
   })
 
   after(() => {
     return Promise.all([
-      node1.stop(),
-      node2.stop()
+      node1 && node1.stop(),
+      node2 && node2.stop()
     ])
   })
 
@@ -67,7 +61,7 @@ describe('concurrent rooms', function () {
 
         await new Promise((resolve) => {
           room.once('peer joined', (peer) => {
-            expect(peer).to.equal(waitingFor)
+            expect(peer.toString()).to.equal(waitingFor.toString())
             resolve()
           })
         })
@@ -76,10 +70,10 @@ describe('concurrent rooms', function () {
   })
 
   it('has peer', (done) => {
-    expect(room1A.getPeers()).to.deep.equal([id2])
-    expect(room1B.getPeers()).to.deep.equal([id2])
-    expect(room2A.getPeers()).to.deep.equal([id1])
-    expect(room2B.getPeers()).to.deep.equal([id1])
+    expect(room1A.getPeers().map(p => p.toString())).to.deep.equal([id2.toString()])
+    expect(room1B.getPeers().map(p => p.toString())).to.deep.equal([id2.toString()])
+    expect(room2A.getPeers().map(p => p.toString())).to.deep.equal([id1.toString()])
+    expect(room2B.getPeers().map(p => p.toString())).to.deep.equal([id1.toString()])
     done()
   })
 
@@ -93,7 +87,7 @@ describe('concurrent rooms', function () {
       }
       gotMessage = true
       expect(message.from.toString()).to.equal(id2.toString())
-      expect(message.data.toString()).to.equal('message 1')
+      expect(uint8ArrayToString(message.data)).to.equal('message 1')
 
       room1B.removeListener('message', crash)
       done()
@@ -107,9 +101,8 @@ describe('concurrent rooms', function () {
     room2B.on('message', crash)
     room2A.once('message', (message) => {
       expect(message.from.toString()).to.equal(id1.toString())
-      expect(message.seqno.toString()).to.equal(Uint8Array.from([0]).toString())
-      expect(message.topicIDs).to.deep.equal([topicA])
-      expect(message.topicCIDs).to.deep.equal([topicA])
+      expect(message.seqno).to.equal(0n)
+      expect(message.topic).to.deep.equal(topicA)
       expect(uint8ArrayToString(message.data)).to.equal('message 2')
       room2B.removeListener('message', crash)
       done()

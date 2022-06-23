@@ -1,13 +1,10 @@
 /* eslint-env mocha */
 /* eslint max-nested-callbacks: ["error", 5] */
-'use strict'
 
-const chai = require('chai')
-chai.use(require('dirty-chai'))
-const expect = chai.expect
-
-const PubSubRoom = require('../')
-const createLibp2p = require('./utils/create-libp2p')
+import { expect } from 'aegir/chai'
+import PubSubRoom from '../src/index.js'
+import createLibp2p from './utils/create-libp2p.js'
+import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 
 const topic = 'pubsub-same-node-test-' + Date.now() + '-' + Math.random()
 
@@ -36,9 +33,9 @@ describe('same node', function () {
 
   it('mirrors broadcast', (done) => {
     rooms[0].once('message', (message) => {
-      expect(message.data.toString()).to.equal('message 1')
+      expect(uint8ArrayToString(message.data)).to.equal('message 1')
       rooms[0].once('message', (message) => {
-        expect(message.data.toString()).to.equal('message 2')
+        expect(uint8ArrayToString(message.data)).to.equal('message 2')
         done()
       })
     })
