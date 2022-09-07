@@ -34,7 +34,7 @@ export default class PubSubRoom extends EventEmitter {
       this._options.pollInterval
     )
 
-    directConnection.handle(libp2p)
+    directConnection.handle(this._libp2p)
     directConnection.emitter.on(this._topic, this._handleDirectMessage)
 
     this._libp2p.pubsub.subscribe(this._topic)
