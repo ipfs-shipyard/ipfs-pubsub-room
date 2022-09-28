@@ -44,7 +44,7 @@
     "@libp2p/floodsub": "^1.0.6",
     "@libp2p/mplex": "^1.1.0",
     "@libp2p/websockets": "^1.0.7",
-    "@multiformats/multiaddr": "^10.2.0",
+    "@multiformats/multiaddr": "^11.0.1",
     "aegir": "^37.3.0",
     "delay": "^5.0.0",
     "libp2p": "^0.37.3"
