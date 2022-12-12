@@ -43,7 +43,7 @@
     "@chainsafe/libp2p-gossipsub": "^2.0.0",
     "@libp2p/floodsub": "^1.0.6",
     "@libp2p/mplex": "^1.1.0",
-    "@libp2p/websockets": "^1.0.7",
+    "@libp2p/websockets": "^5.0.1",
     "@multiformats/multiaddr": "^10.2.0",
     "aegir": "^37.3.0",
     "delay": "^5.0.0",
